@@ -14,22 +14,30 @@ Skill Check Labs are interactive, hands-on exercises designed to validate the kn
 # Walkthrough
 
 - Accessed `http://target.ine.local/robots.txt` Known the host is running on Wordpress, get sensitive URL, and got Flag 1
-  
+  <img width="677" height="251" alt="Robots File" src="https://github.com/user-attachments/assets/c2a6ac34-37b0-4f06-b074-6bea8337f4d6" />
+
 - Attempted to access `http://target.ine.local/wp-admin/` and was redirected to `https:/target.ine.local/wp-login.php`
+  <img width="1015" height="610" alt="WP Login Page" src="https://github.com/user-attachments/assets/aae84215-d9b4-4dfe-81cb-048be4a50ced" />
 
 - Ran command `curl http:/target.ine.local/wp-login.php` and discovered the website was running on Wordpress version 6.5.3
+  <img width="911" height="247" alt="Service Version Discovery" src="https://github.com/user-attachments/assets/abdd860c-dc17-4ae8-8142-573dea39f33c" />
 
 - Ran command `whatweb http://target.ine.local`. Knew more information about the technologies used by the website and got the FLAG 2.
-
+  
 - Ran command `wpscan --url http://target.ine.local` and find the website configuration backup file `http://target.ine.local/wp-config.bak`. Also we found an interesting directory on the website `/wp-content`, which might be worth to explore later
+  <img width="791" height="117" alt="WP Config Backup" src="https://github.com/user-attachments/assets/9ccf227f-3822-4a08-b714-254344a41e0d" />
+  <img width="1241" height="341" alt="WP Content Directory" src="https://github.com/user-attachments/assets/17e33b4b-0e4b-42da-8260-a558b1a214a4" />
+
 
 - In the backup file, found the FLAG 4.
 
 - Ran command `drib http://target.ine.local/wp-content` to see if there's anything interested. Found `http://target.ine.local/wp-content/uploads`, and it seems we can find fun things there.
-  ![[Uploads Directory.png]]
+  <img width="736" height="485" alt="Uploads Directory" src="https://github.com/user-attachments/assets/8ef8af64-4995-4c98-8a49-0e7df2b89086" />
+
 - Browsed the `/uploads` directory in browser and found the FLAG 3.
 
 - Ran command `trrack http://target.ine.local` to mirror the website
+  <img width="368" height="212" alt="Website Mirroring" src="https://github.com/user-attachments/assets/483203e8-2a90-4da7-af8a-cbe19ad97bfa" />
 
 - Browsed the files dumped and found the FLAG 5 in the file `xmlrpc0db0.php`
 
