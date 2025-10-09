@@ -9,7 +9,7 @@ date: 2025-10-09
 ---
 # Objective
 
-Skill Check Labs are interactive, hands-on exercises designed to validate the knowledge and skills you’ve gained in this course through real-world scenarios. Each lab presents practical tasks that require you to apply what you’ve learned. Unlike other INE labs, solutions are not provided, challenging you to demonstrate your understanding and problem-solving abilities. Your performance is graded, allowing you to track progress and measure skill growth over time.
+Practice lab for the training. Section Assessment Methodologies: Information Gathering
 
 # Walkthrough
 
