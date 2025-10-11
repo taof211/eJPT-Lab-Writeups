@@ -4,7 +4,6 @@ tags:
   - red_team
   - T1018
   - T1046
-course: "[[_Hub - Penetration Testing Student]]"
 topic: Footprinting & Scanning
 date: 2025-10-11
 module: Assessment Methodologies
