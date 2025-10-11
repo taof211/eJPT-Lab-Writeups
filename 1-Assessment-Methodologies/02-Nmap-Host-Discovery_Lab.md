@@ -16,7 +16,7 @@ Your task is to discover available live hosts and their open ports using Nmap an
 
 - Using `ifconfig` and `ping` commands to identify the network information of the attack machine and the victim machine. Confirmed:
 	- The IP addresses of both the machine
-	- The target machine is online and reachable
+	- The target machine is not pingable 
 	- The machines are not in the same subnet
    
     <img width="667" height="343" alt="ifconfig" src="https://github.com/user-attachments/assets/fdf085bd-df64-4d47-9f8f-fd6cf5c8c109" />
