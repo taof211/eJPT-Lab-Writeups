@@ -6,6 +6,7 @@ tags:
   - "#T1592_002"
 topic: Information Gathering
 date: 2025-10-09
+module: Assessment Methodologies
 ---
 # Objective
 
