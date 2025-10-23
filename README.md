@@ -15,8 +15,8 @@ This project serves as a portfolio of my hands-on lab work for the eJPTv2. The g
 The repository is organized into two main sections:
 
 - **/1-Assessment-Methodologies/**
-- **/2-Host-and-Network-Auditing/**
-- **/3-Host-and-Network-Penetration-Testing/**
+- **/2-Host-and-Network-Penetration-Testing/**
+- **/3-Web-Application-Penetration-Testing/**
   - These directories contain the detailed, step-by-step walkthroughs for each lab within the eJPTv2 learning path.
 
 - **/Cheatsheets/**
