@@ -82,7 +82,7 @@ on the correct VPN ($tun0$)? Are you scanning the correct subnet?
 
 ### Scan
 
-`root@attack nmap -p 21 --script ftp-anon <target_ip>`
+`root@attack nmap -p 21 --script=ftp-anon <target_ip>`
 
 ### Manual Enumeration
 
@@ -108,3 +108,49 @@ on the correct VPN ($tun0$)? Are you scanning the correct subnet?
   
     `root@attack hydra -L <user_file> -P <password_file> ftp://<target_ip>`
 
+## Port 22: SSH
+
+### Scan
+
+`root@attack nmap -p 22 --script=ssh-auth-methods <target_ip>`
+
+### Manual Enumeration
+
+`root@attack nc -nv <IP> 22` 
+
+### Exploitation
+
+- IF Banner = "libssh"
+
+    `msf6 > use auxiliary/scanner/ssh/libssh_auth_bypass`
+
+- Brute Force:
+
+    `root@attack hydra -L <user_file> -P <password_file> ssh://<target_ip>`
+
+## Port 80/443: HTTP/S
+
+### Scan
+
+`root@attack nmap -p 80,443 --script=http-* <target_ip>`
+
+### File/Directory Enumeration
+
+`gobuster dir -u http://<TARGET_IP> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git`
+
+- Web Reconnaissance Quick Checklist
+  After running Gobuster, please ensure you manually inspect the following common files and directories, which serve as key sources of information within the eJPT practice lab:
+    - **robots.txt**: Examine the `Disallow:` entries, which typically point to hidden administrative pages.
+    - **wp-config.php/wp-config.bak**: Often contain plaintext Database credentials.
+    - **phpinfo.php**: Leak detailed PHP configuration and server variables.
+
+### CMS Scan
+
+`root@attack wpscan --url http://<TARGET_IP> --enumerate u,p,t,vp`
+
+`--url <URL>`: Target URL.
+`--enumerate p`: Enumerate popular plugins.
+`--enumerate ap`: Enumerate all plugins (takes considerable time).
+`--enumerate t`: Enumerate popular themes.
+`--enumerate at`: Enumerate all themes.
+`--enumerate vp`: Enumerate vulnerable plugins (most commonly used).
