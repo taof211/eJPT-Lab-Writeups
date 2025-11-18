@@ -196,6 +196,7 @@ msf6 > use auxiliary/scanner/http/http_put
     ```text
     msf6 > use exploit/windows/iis/iis_webdav_upload_asp
     ```
+    Or upload webshells manually
 
 - If Banner = "HTTP File Server 2.3x" 
     ```text
@@ -212,8 +213,8 @@ msf6 > use auxiliary/scanner/http/http_put
     msf6 > use exploit/multi/http/tomcat_jsp_upload_bypass 
     ```
 
-- If find Local File Inclusion and Remote File Inclusion
-    Switch to the LFI/RFI & Web Attack Payloads Quick Reference Guide
+- If find Local File Inclusion and Remote File Inclusion (reading source code can help identify the vulnerabilities sometime)
+    Use the LFI/RFI & Web Attack Payloads to exploit the site
 
 ### LFI/RFI & Web Attack Payloads
 
