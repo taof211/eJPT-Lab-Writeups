@@ -289,3 +289,16 @@ smbmap -H <target_ip> -r <share>: Recursively list shared memory
 hydra -L <user_file> -P <password_file> //<target_ip> smb
 ```
 
+## Port 3306: MySQL
+
+### Scan
+
+```bash
+nmap -p 3306 --script mysql-info <target_ip>
+```
+
+### Brute Force
+
+```bash
+hydra -L <user_file> -P <password_file> //<target_ip> mysql
+```
