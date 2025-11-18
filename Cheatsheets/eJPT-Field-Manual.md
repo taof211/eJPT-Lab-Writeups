@@ -8,7 +8,7 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 - Observe (Observe the battlefield) — first 30 minutes
   - Read all 35 questions
   - Read and comprehend the core table (minimum pass mark)
-  - Read and internalize the examination constraints (no internet access, dynamic Flags)
+  - Read and internalize the examination constraints (no internet access, dynamic flags)
 
 - Orient (Adjust mindset) — most critical strategic step
   - The exam is not a "pwn-all-machines" CTF. It is a "document-all-findings" audit.
@@ -26,8 +26,8 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 | ----------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
 | Assessment Methodologies      | 25%    | Host discovery (`nmap -sn`), port/service/OS identification (`nmap -sV -sC -O`), vulnerability identification (`searchsploit`) | 90%           |
 | Host & Network Auditing       | 25%    | System/user enumeration, credential dumping, file transfer                                                                    | 80%           |
-| Host & Network Penetration    | 35%    | Exploitation (Metasploit Framework), brute force (hydra), pivoting                                                            | 70%           |
-| Web Application               | 15%    | Directory enumeration (gobuster), CMS scanning (wpscan), SQL injection, cross-site scripting                                  | 60%           |
+| Host & Network Penetration    | 35%    | Exploitation (Metasploit Framework), brute force (Hydra), pivoting                                                            | 70%           |
+| Web Application               | 15%    | Directory enumeration (Gobuster), CMS scanning (WPScan), SQL injection, cross-site scripting                                  | 60%           |
 
 # Tactical Deployment and Reconnaissance
 
@@ -37,6 +37,8 @@ The Metasploit database serves as the core strategic tool for managing operation
 
 ```bash
 service postgresql start && msfconsole
+```
+```text
 msf6 > db_status
 msf6 > workspace -a lab
 ```
@@ -70,12 +72,12 @@ msf6 > setg RHOST <target_ip>
 
 ### Issue 1
 
-- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are "filtered".
+- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sS` scan indicates all ports are "filtered".
 - Decide (Determine Diagnostic Action):
-  1. Re-Orient (Tool Failure): `nmap -sn` (ICMP Ping) is frequently blocked by firewalls. `nmap -sV` (default SYN scan) may also be blocked.
+  1. Re-Orient (Tool Failure): `nmap -sn` (ICMP ping) is frequently blocked by firewalls. `nmap -sS` (SYN scan) may also be blocked.
   2. Re-Decide (Switch Tools)
 - Act:
-  1. Use `sudo arp-scan -I eth0 <RANGE>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
+  1. Use `sudo arp-scan -I eth0 <target_ip_range>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
   2. For port scanning, switch to a full TCP Connect scan: `nmap -sT -Pn <target_ip>`. `-sT` is noisier but more reliable against simple firewalls. `-Pn` skips (potentially failing) host discovery pings.
 - Re-Orient (Self-Check): Is your own machine configured correctly? Check `ip a` on Kali. Are you on the correct VPN interface (`tun0`)? Are you scanning the correct subnet?
 
@@ -170,7 +172,7 @@ wpscan --url http://<target_ip> --enumerate u,p,t,vp
 ```
 
 - Options reference:
-  - `--url <URL>`: Target URL
+  - `--url <url>`: Target URL
   - `--enumerate p`: Enumerate popular plugins
   - `--enumerate ap`: Enumerate all plugins (takes considerable time)
   - `--enumerate t`: Enumerate popular themes
