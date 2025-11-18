@@ -22,6 +22,12 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 - Action (Execution):
     - Entering the second phase (tactical setup and reconnaissance) with this reinforced, resilient mindset.
 
+| Domain                        | Weight | Key Skills                                                                                                                    | Minimum Score |
+| ----------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
+| Assessment Methodologies      | 25%    | Host discovery (`nmap -sn`), port/service/OS identification(`nmap -sV -sC -O`), vulnerability identification (`searchsploit`) | 90%           |
+| Host & Networking Auditing    | 25%    | System/user enumeration , credential dumping, file transfer                                                                   | 80%           |
+| Host & Networking Penetration | 35%    | Exploitation (Metasploit Framework), Brute Force (hydra), Pivoting                                                            | 70%           |
+| Web Application               | 15%    | Directory enumeration (gobuster), CMS scanning (wpscan), SQL injection, cross-site scripting                                  | 60%           |
 
 # Tactical Deployment and Reconnaissance
 
