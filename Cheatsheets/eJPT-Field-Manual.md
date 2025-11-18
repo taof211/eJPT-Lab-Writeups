@@ -1,32 +1,32 @@
 # Summary
-This strategic guide rovides mandatory protocols for the exam's unique constraints and uses OODA-based troubleshooting loops to help follow the best practice opertaions and overcome common "stuck" points in reconnaissance, exploitation, and pivoting.
+This strategic guide provides mandatory protocols for the exam's unique constraints and uses OODA-based troubleshooting loops to follow best-practice operations and overcome common "stuck" points in reconnaissance, exploitation, and pivoting.
 
-# Before the Biginning
+# Before the Beginning
 
 This section provides a high-level OODA loop to guide the entire 48-hour examination.
 
-- Observe (Observe the battlefield): This constitutes the initial 30 minutes.
-    - Action: Read all 35 questions 1
-    - Action: Read and comprehend the core table 1 (minimum pass mark) 
-    - Action: Read and internalise the examination constraints (no internet access, dynamic Flags)
-    
-- Orient (Adjust mindset): This represents the most critical strategic step.
-    - The exam is not a ‘pwn-all-machines’ CTF. It is a ‘document-all-findings’ audit.
-    - The exam meticulous enumeration and documentation outweigh exploitation.
+- Observe (Observe the battlefield) — first 30 minutes
+  - Read all 35 questions
+  - Read and comprehend the core table (minimum pass mark)
+  - Read and internalize the examination constraints (no internet access, dynamic Flags)
 
-- Decide (Establish Engagement Rules): 
-    - I shall follow a “problem-driven attack” model. These 35 issues form my map.
-    - I shall adopt a “dual-brain strategy” and “flag submission protocol” as mandatory, inviolable rules.
-    - I shall not become bogged down on a single exploit for more than 30 minutes. I shall pivot to alternative targets, gathering additional “assessment” score points, which (with a minimum threshold of 90%) hold greater value than exploitation (minimum threshold of 70%).
+- Orient (Adjust mindset) — most critical strategic step
+  - The exam is not a "pwn-all-machines" CTF. It is a "document-all-findings" audit.
+  - Meticulous enumeration and documentation outweigh exploitation.
 
-- Action (Execution):
-    - Entering the second phase (tactical setup and reconnaissance) with this reinforced, resilient mindset.
+- Decide (Establish Engagement Rules)
+  - Follow a problem-driven attack model. These 35 issues form the map.
+  - Adopt a dual-brain strategy and flag submission protocol as mandatory, inviolable rules.
+  - Do not become bogged down on a single exploit for more than 30 minutes. Pivot to alternative targets, gathering additional assessment score points which (with a minimum threshold of 90%) hold greater value than exploitation (minimum threshold of 70%).
+
+- Act (Execution)
+  - Enter the second phase (tactical setup and reconnaissance) with this reinforced, resilient mindset.
 
 | Domain                        | Weight | Key Skills                                                                                                                    | Minimum Score |
 | ----------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------- |
-| Assessment Methodologies      | 25%    | Host discovery (`nmap -sn`), port/service/OS identification(`nmap -sV -sC -O`), vulnerability identification (`searchsploit`) | 90%           |
-| Host & Networking Auditing    | 25%    | System/user enumeration , credential dumping, file transfer                                                                   | 80%           |
-| Host & Networking Penetration | 35%    | Exploitation (Metasploit Framework), Brute Force (hydra), Pivoting                                                            | 70%           |
+| Assessment Methodologies      | 25%    | Host discovery (`nmap -sn`), port/service/OS identification (`nmap -sV -sC -O`), vulnerability identification (`searchsploit`) | 90%           |
+| Host & Network Auditing       | 25%    | System/user enumeration, credential dumping, file transfer                                                                    | 80%           |
+| Host & Network Penetration    | 35%    | Exploitation (Metasploit Framework), brute force (hydra), pivoting                                                            | 70%           |
 | Web Application               | 15%    | Directory enumeration (gobuster), CMS scanning (wpscan), SQL injection, cross-site scripting                                  | 60%           |
 
 # Tactical Deployment and Reconnaissance
@@ -35,46 +35,49 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 
 The Metasploit database serves as the core strategic tool for managing operational cognitive load.
 
-```
-root@attack service postgresql start && msfconsole
-msf6 > db status
+```bash
+service postgresql start && msfconsole
+msf6 > db_status
 msf6 > workspace -a lab
 ```
 
 ## Network and Service Reconnaissance
 
-The objective at this stage is to construct a comprehensive ‘map’ of the network.
+The objective at this stage is to construct a comprehensive map of the network.
 
 ### Host Discovery
 
-`root@attack nmap -sn <target_ip_range>`
+```bash
+nmap -sn <target_ip_range>
+```
 
 ### Service and Port Scanning
 
-`root@attack nmap -sV -sC -O -p- <target_ip> -oX v_<target_ip>.xml`
+```bash
+nmap -sV -sC -O -p- <target_ip> -oX v_<target_ip>.xml
+```
 
 ### Import Nmap Results into Metasploit
 
-```
+```text
 msf6 > db_import v_<target_ip>.xml
 msf6 > hosts
 msf6 > setg RHOSTS <target_ip>
-msf6 > setg RHOST <itarget_ip>
+msf6 > setg RHOST <target_ip>
 ```
 
 ## The OODA Loop in the Reconnaissance Phase (Troubleshooting)
 
 ### Issue 1
 
-- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are “filtered”.
+- Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are "filtered".
 - Decide (Determine Diagnostic Action):
-    1. Re-Orient (Tool Failure): $nmap -sn$ (ICMP Ping) is frequently blocked by firewalls. $nmap -sV$ (default SYN scan) may also be blocked.
-    2. Re-Decide (Switch Tools):
-- Action:
-    1. Use `sudo arp-scan -I eth0 <RANGE>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
-    2. For port scanning, switch to a full TCP Connect scan: `nmap -sT -Pn`. -sT is noisier but more reliable against simple firewalls. -Pn skips (potentially failing) host discovery pings.
-- Re-Orient (Self-Check): ‘Is my own machine configured correctly?’ Check `ip a` on Kali. Are you
-on the correct VPN ($tun0$)? Are you scanning the correct subnet?
+  1. Re-Orient (Tool Failure): `nmap -sn` (ICMP Ping) is frequently blocked by firewalls. `nmap -sV` (default SYN scan) may also be blocked.
+  2. Re-Decide (Switch Tools)
+- Act:
+  1. Use `sudo arp-scan -I eth0 <RANGE>`. ARP operates at Layer 2 and is virtually unfiltered on the local subnet. This is the most reliable host discovery method.
+  2. For port scanning, switch to a full TCP Connect scan: `nmap -sT -Pn <target_ip>`. `-sT` is noisier but more reliable against simple firewalls. `-Pn` skips (potentially failing) host discovery pings.
+- Re-Orient (Self-Check): Is your own machine configured correctly? Check `ip a` on Kali. Are you on the correct VPN interface (`tun0`)? Are you scanning the correct subnet?
 
 # Attack Playbook (Enumeration and Exploitation)
 
@@ -82,75 +85,94 @@ on the correct VPN ($tun0$)? Are you scanning the correct subnet?
 
 ### Scan
 
-`root@attack nmap -p 21 --script=ftp-anon <target_ip>`
+```bash
+nmap -p 21 --script=ftp-anon <target_ip>
+```
 
 ### Manual Enumeration
 
-`root@attack ftp <target_ip>`   
-(Use `anonymous` as username and empty password to login)
+```bash
+ftp <target_ip>
+```
+- Use `anonymous` as username and empty password to log in.
 
 ### MSF Enumeration
 
-`msf6 > use auxiliary/scanner/ftp/anonymous`
+```text
+msf6 > use auxiliary/scanner/ftp/anonymous
+```
 
 ### Exploitation
 
-- If Nmap results indicate ‘Anonymous FTP login permitted’ with write access (WA WRITE). Proceed immediately to Payload delivery using `put shell.exe`.
-- IF Banner = ‘vsftpd 2.3.4’
-
-  `msf6 > use exploit/unix/ftp/vsftpd_234_backdoor`
-  
-- IF Banner = ‘Pro-FTPD 1.3.3c’
-  
-    `msf6 > exploit/unix/ftp/proftpd_133c_backdoor`
-  
-- Brute Force:
-  
-    `root@attack hydra -L <user_file> -P <password_file> ftp://<target_ip>`
+- If Nmap results indicate "Anonymous FTP login permitted" with write access (WA WRITE), proceed immediately to payload delivery using `put shell.exe`.
+- If banner = `vsftpd 2.3.4`:
+  ```text
+  msf6 > use exploit/unix/ftp/vsftpd_234_backdoor
+  ```
+- If banner = `ProFTPD 1.3.3c`:
+  ```text
+  msf6 > use exploit/unix/ftp/proftpd_133c_backdoor
+  ```
+- Brute force:
+  ```bash
+  hydra -L <user_file> -P <password_file> ftp://<target_ip>
+  ```
 
 ## Port 22: SSH
 
 ### Scan
 
-`root@attack nmap -p 22 --script=ssh-auth-methods <target_ip>`
+```bash
+nmap -p 22 --script=ssh-auth-methods <target_ip>
+```
 
 ### Manual Enumeration
 
-`root@attack nc -nv <IP> 22` 
+```bash
+nc -nv <target_ip> 22
+```
 
 ### Exploitation
 
-- IF Banner = "libssh"
-
-    `msf6 > use auxiliary/scanner/ssh/libssh_auth_bypass`
-
-- Brute Force:
-
-    `root@attack hydra -L <user_file> -P <password_file> ssh://<target_ip>`
+- If banner contains `libssh`:
+  ```text
+  msf6 > use auxiliary/scanner/ssh/libssh_auth_bypass
+  ```
+- Brute force:
+  ```bash
+  hydra -L <user_file> -P <password_file> ssh://<target_ip>
+  ```
 
 ## Port 80/443: HTTP/S
 
 ### Scan
 
-`root@attack nmap -p 80,443 --script=http-* <target_ip>`
+```bash
+nmap -p 80,443 --script=http-* <target_ip>
+```
 
 ### File/Directory Enumeration
 
-`gobuster dir -u http://<TARGET_IP> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git`
+```bash
+gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git
+```
 
 - Web Reconnaissance Quick Checklist
-  After running Gobuster, please ensure you manually inspect the following common files and directories, which serve as key sources of information within the eJPT practice lab:
-    - **robots.txt**: Examine the `Disallow:` entries, which typically point to hidden administrative pages.
-    - **wp-config.php/wp-config.bak**: Often contain plaintext Database credentials.
-    - **phpinfo.php**: Leak detailed PHP configuration and server variables.
+  - After running Gobuster, manually inspect the following common files and directories (key sources of information within the eJPT practice lab):
+    - robots.txt: Examine the `Disallow:` entries, which typically point to hidden administrative pages.
+    - wp-config.php/wp-config.bak: Often contain plaintext database credentials.
+    - phpinfo.php: Leaks detailed PHP configuration and server variables.
 
 ### CMS Scan
 
-`root@attack wpscan --url http://<TARGET_IP> --enumerate u,p,t,vp`
+```bash
+wpscan --url http://<target_ip> --enumerate u,p,t,vp
+```
 
-`--url <URL>`: Target URL.
-`--enumerate p`: Enumerate popular plugins.
-`--enumerate ap`: Enumerate all plugins (takes considerable time).
-`--enumerate t`: Enumerate popular themes.
-`--enumerate at`: Enumerate all themes.
-`--enumerate vp`: Enumerate vulnerable plugins (most commonly used).
+- Options reference:
+  - `--url <URL>`: Target URL
+  - `--enumerate p`: Enumerate popular plugins
+  - `--enumerate ap`: Enumerate all plugins (takes considerable time)
+  - `--enumerate t`: Enumerate popular themes
+  - `--enumerate at`: Enumerate all themes
+  - `--enumerate vp`: Enumerate vulnerable plugins (most commonly used)
