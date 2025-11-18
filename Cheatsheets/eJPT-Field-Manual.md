@@ -68,7 +68,7 @@ msf6 > setg RHOST <target_ip>
 
 ## The OODA Loop in the Reconnaissance Phase (Troubleshooting)
 
-### Issue 1
+### Issue 1 Scanning Failed
 
 - Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are "filtered".
 - Decide (Determine Diagnostic Action):
@@ -425,7 +425,9 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
   put backdoor.exe
   ```
 
-### Payload Troubleshooting
+### The OODA Loop in the Exploitation Phase (Troubleshooting)
+
+#### Issue 1 Payload Failed
 
 - Step 1: Staged vs. stageless
   - Staged (…/meterpreter/reverse_tcp): small loader then downloads stage; needs two connections.
@@ -457,3 +459,39 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
 
 This uses the stable shell (Session 1) to upload and run a new Meterpreter payload, yielding a fresh Meterpreter session (Session 2) with higher reliability.
 
+#### Issue 2 Cannot Find Vulnerable Component
+
+- Orient: Exploiting vulnerabilities (e.g., `vsftpd_234_backdoor`)
+- Decide
+  - Re-Orient (Banner Information): ‘Did I genuinely read Nmap's banner, or am I guessing?
+  - Re-Orient (Question): ‘Have I misread the exam question?’ The question might not concern this service at all.
+  - Decide (Abandon): This isn't CTF. The exam runs for 48 hours. Don't waste two hours on a failed exploit.
+- Act: Halt. Shift focus to another open port on the same machine. Alternatively, move to an entirely different machine. Maybe return later.
+
+# Post Exploitation
+
+The superiority of manual enumeration: Regardless, the manually curated enumeration lists within this handbook remain the preferred approach. They are precise, targeted, and directly map to known privilege escalation vectors within eJPT. During examinations, executing these 10-15 manual commands typically proves more efficient than sifting through automated script outputs.
+
+## Primary Triage
+
+The first set of commands after obtaining any shell:
+
+- Who am i?
+  - Linux: `id`
+  - Windows: `whoami /priv` (Key: Verify SeImpersonatePrivilege)
+- Where am i? (System)
+  - Linux: `uname -a`, `cat /etc/*release*`, `lscpu`
+  - Windows: `systeminfo`
+- Where am i (Network)
+  - Linux: `ip a` (check for a second NIC)
+  - Windows: `ipconfig /all` (check for a second NIC)
+  - If a second NIC is detected (e.g., on the `10.x.x.x` subnet), immediately trigger Pivoting.
+- Who else is here? (System)
+  - Linux: `cat /etc/passwd | grep -v nologin`
+  - Windows: `net user`, `net localgroup`, `net localgroup administrators`
+- Who else is here? (Network)
+  - Linux: `netstat -antup`, `route`, `arp`, `cat /etc/hosts`, `cat /etc/resolv.conf`
+  - Windows: `netstat -ano`, `net share`, `ifconfig /displaydns`, `route print`, `arp /a`
+- What is running:
+  - Linux: `ps aux`, `ls -la /etc/cron*`
+  - Windows: `tasklist /svc`, `schtask /query /fo list`, `qfe list`
