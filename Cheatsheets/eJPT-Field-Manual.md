@@ -710,6 +710,7 @@ Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stag
 
   - Orient: `autoroute` has been configured, but the exploit module is unable to gain a shell.
   - Decide:
+  
     **Core logic**: `autoroute` permits the attack machine (Kali) to connect to internal targets, but it does not permit internal targets to connect back to the attack machine.
     - Orient: Using the `reverse_tcp` payload to run the Exploit module succeeded, but the shell promptly terminated.
     - Orient: The target attempted to reconnect to the attack machine, but it lacked the routing to the attack machine's network.
