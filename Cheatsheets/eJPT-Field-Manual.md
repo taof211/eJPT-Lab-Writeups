@@ -616,11 +616,11 @@ Automatical Enumeration Tools:
   - New Decision Priority List:
     1. Priority 1: PIVOTING (Lateral Movement). Did $ip a$ Triage 1 discover a new subnet?
     - DECIDE: Proceed immediately to Pivoting. Do not attempt $root$ first.
-  2. Priority 2: AUDITING.
-  - DECIDE: Run a complete manual enumeration checklist (Core Tables 4 & 5) 1. Copy/paste all outputs to local notes. This ensures 80% audit domain score.
-  3. Priority 3: EASY PRIVESC (Simple Privilege Escalation). Is there a 1-minute escalation vector (Path B)?
-  - DECIDE: Execute it ($sudo vim$, $impersonate token$). After gaining $root$, rerun the audit script with $root$ privileges.
-  4. Priority 4: HARD PRIVESC (Difficult Privilege Escalation). Is the sole path complex privilege escalation (Path D)?
-  - DECIDE: Cease. Do not go down this rabbit hole. Your time would be better spent on other machines.
+    2. Priority 2: AUDITING.
+    - DECIDE: Run a complete manual enumeration checklist (Core Tables 4 & 5) 1. Copy/paste all outputs to local notes. This ensures 80% audit domain score.
+    3. Priority 3: EASY PRIVESC (Simple Privilege Escalation). Is there a 1-minute escalation vector (Path B)?
+    - DECIDE: Execute it ($sudo vim$, $impersonate token$). After gaining $root$, rerun the audit script with $root$ privileges.
+    4. Priority 4: HARD PRIVESC (Difficult Privilege Escalation). Is the sole path complex privilege escalation (Path D)?
+    - DECIDE: Cease. Do not go down this rabbit hole. Your time would be better spent on other machines.
 
 # Pivoting and Lateral Movement
