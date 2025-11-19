@@ -19,7 +19,7 @@ The repository is organized into two main sections:
 - **/3-Web-Application-Penetration-Testing/**
   - These directories contain the detailed, step-by-step walkthroughs for each lab within the eJPTv2 learning path.
 
--   **/Field Manual/**
+-   **/Field-Manual/**
     -   This directory contains my primary strategic and tactical guide, **[eJPT-Field-Manual.md]**, which gives up the trafitional cheatsheet format but provides quick-reference all-in-one commands and troubleshooting logic (OODA loops) for reconnaissance, exploitation, pivoting, and post-exploitation.
 
 ## Disclaimer
