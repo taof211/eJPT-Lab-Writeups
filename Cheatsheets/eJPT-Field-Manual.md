@@ -624,3 +624,94 @@ Automatical Enumeration Tools:
     - DECIDE: Cease. Do not go down this rabbit hole. Your time would be better spent on other machines.
 
 # Pivoting and Lateral Movement
+
+Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stage where the highest number of candidates encounter failure.
+
+**Trigger**: Execute commands `ipconfig` (Windows) or `ipa` (Linux) on the initial shell (‘PivotBox’) during Local Enumeration/Discovery.
+
+**Observation**: Two NICs detected - one in the DMZ (e.g., `192.168.1.10`), the other on the internal network (e.g. `10.1.13.5`).
+
+**Objective**: Now attack the `10.1.13.0/24` subnet via the PivotBox shell.
+
+**Decision Point**: To utilise Metasploit's internal modules or Kali's external tools?
+
+## Scenario 1. Utilise Metasploit's Internal Modules
+
+- Tool: `autoroute`
+- Workflow:
+  ```text
+  meterpreter > run autoroute -s <target_subnet>
+  meterpreter > run autoroute -p
+  meterpreter > background
+  msf6 > use auxiliary/scanner/portscan/tcp
+  msf6 > set RHOSTS <target_subnet>
+  msf6 > run
+  ```
+
+## Scenario 2. Utilise Kali's External Tools
+
+- Tool: SocksProxy + Proxychains
+- Workflow:
+  - Check Proxychains configuration
+    ```bash
+    cat /etc/proxychains4.conf # socks4 127.0.0.1:9050 can be found by default
+  - Set msfconsole
+    ```text
+    msf6 > use auxiliary/server/socks_proxy
+    msf6 > set SRVHOST 127.0.0.1
+    msf6 > set SRVPORT 9050
+    msf6 > set VERSION 4a
+    msf6 > run -j
+    ```
+  - Execution
+    ```bash
+    proxychains <tools_command>
+    ```
+
+- Tool: `portfwd`
+- Workflow:
+  - Add port forwarding in Meterpreter
+    ```text
+    meterpreter > portfwd add -l <local_port>> -p <target_port>> -r <target_ip>
+    ```
+  - Execution
+    ```bash
+    <tool_command> # in the command use 127.0.0.1 as IP and <local_port> as Target Port
+
+## The OODA Loop in the Pivoting Phase
+
+### Issue 1 Proxychains Failed
+
+- Orient: The `proxychains nmap` command hangs or fails
+- Decide:
+  - Re-orient: Is the Meterpreter session of the PivotBox still active?
+  - Act: 
+    ```text
+    msf6 > sessions -l
+    ```
+    If the conversation has ended, the PivotBox must be reexploited.
+  - Re-Observe: Is `socks_proxy` module running?
+  - Act:
+    ```text
+    msf6 > jobs
+    ```
+    If the module is not running, rerun it
+  - Re-Observe: Is the etc/proxychains.conf file correct?
+  - Act
+    ```bash
+    tail /etc/proxychains.conf # the last line should match the sock proxy setting
+    ```
+  - Re-Orient: If the command is misused, such as `nmap -sS`?
+  - Act: Correct the command
+
+  > Proxychains forwards TCP connections via SOCKS/HTTP proxy chains. It can only handle complete TCP connection requests (i.e. the connect() system call). Consequently, any scanning method relying on raw sockets cannot function through Proxychains.
+
+  ### Issue 2 Exploit Succeed But No Session Created
+
+  - Orient: `autoroute` has been configured, but the exploit module is unable to gain a shell.
+  - Decide:
+    **Core logic**: `autoroute` permits the attack machine (Kali) to connect to internal targets, but it does not permit internal targets to connect back to the attack machine.
+    - Orient: Using the `reverse_tcp` payload to run the Exploit module succeeded, but the shell promptly terminated.
+    - Orient: The target attempted to reconnect to the attack machine, but it lacked the routing to the attack machine's network.
+    - Act 1: Using the `bind_tcp` payload, or
+    - Act 2: Configure `LHOST` to the PivotBox's internal IP address, and set up port forwarding on the PivotBox to relay the shell back to the attack machine. 
