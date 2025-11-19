@@ -22,6 +22,15 @@ The repository is organized into two main sections:
 -   **/Field-Manual/**
     -   This directory contains my primary strategic and tactical guide, **[eJPT-Field-Manual.md](Field-Manual/eJPT-Field-Manual.md)**, which gives up the trafitional cheatsheet format but provides quick-reference all-in-one commands and troubleshooting logic (OODA loops) for reconnaissance, exploitation, pivoting, and post-exploitation.
 
+## 📖 How to Use the Field Manual
+
+The Field Manual is designed not just as a list of commands, but as a decision-making framework for the exam. To navigate it efficiently, pay attention to the internal structure:
+
+* **Quick Navigation & Indexing:** Use the **Quick Index** at the top of the document to instantly jump to major sections (e.g., Service Playbooks, Pivoting). Every major section also includes a **[Back to Index]** link for rapid return, minimizing scrolling time during the exam.
+* **OODA Loop Framework:** The guide's structure (Observe, Orient, Decide, Act) is intended to help you troubleshoot when an attack fails, guiding you away from time-wasting "rabbit holes" and toward productive next steps.
+* **Service Playbooks:** Use these sections (e.g., *Port 21: FTP*, *Port 80/443: HTTP/S*) as a checklist after initial Nmap scanning to ensure complete enumeration and systematic vulnerability checking for each open service.
+* **Post-Exploitation Triage:** After gaining an initial shell, immediately navigate to the *Primary Triage* section. This is your mandatory starting point for discovery, network mapping, and assessing privilege escalation vectors.
+
 ## Disclaimer
 
 All information in this repository is for educational purposes only. I am not responsible for any misuse of the information.
