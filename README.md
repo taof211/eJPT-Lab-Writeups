@@ -1,4 +1,4 @@
-# eJPTv2 Lab Walkthroughs & Cheatsheets 🚀
+# eJPTv2 Lab Walkthroughs & Field Manual🚀
 
 Welcome to my repository for the eLearnSecurity Junior Penetration Tester (eJPTv2) certification. This repository contains my detailed lab walkthroughs and custom cheatsheets compiled throughout my learning process.
 
