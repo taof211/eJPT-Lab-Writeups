@@ -4,30 +4,37 @@
   - [Summary](#summary)
   - [Before the Beginning (48h OODA)](#before-the-beginning)
 - Recon & Scanning
+  - [Tactical Deployment and Reconnaissance](#tactical-deployment-and-reconnaissance)
   - [Metasploit init & verify](#metasploit-framework-initiation-and-verification-workflow)
+  - [Network and Service Reconnaissance](#network-and-service-reconnaissance)
   - [Host discovery](#host-discovery)
   - [Port/service scanning](#service-and-port-scanning)
   - [Import Nmap → MSF](#import-nmap-results-into-metasploit)
   - [Recon troubleshooting (OODA)](#the-ooda-loop-in-the-reconnaissance-phase-troubleshooting)
 - Service Playbooks
+  - [Attack Playbook](#attack-playbook-enumeration-and-exploitation)
   - [FTP (21)](#port-21-ftp)
   - [SSH (22)](#port-22-ssh)
   - [HTTP/S (80/443)](#port-80443-https)
   - [SMB (139/445)](#port-139445-smb)
   - [MySQL (3306)](#port-3306-mysql)
 - Payloads
+  - [Payload Generation and Delivery](#payload-generation-and-delivery)
   - [MSFVenom generation](#msfvenom-payloads-generation)
   - [Built-in payloads on Kali](#built-in-payloads-on-kali)
   - [Delivery (HTTP/SMB/FTP)](#payload-delivery)
   - [Payload troubleshooting (OODA)](#the-ooda-loop-in-the-exploitation-phase-troubleshooting)
 - Post-Exploitation
+  - [Post Exploitation](#post-exploitation)
   - [Primary triage](#primary-triage)
-  - [MSF quick triage modules](#post-exploitation)
   - [PrivEsc: Linux](#privilege-escalation-execution)
   - [PrivEsc: Windows](#privilege-escalation-execution)
   - [Post-exploitation OODA](#the-ooda-loop-in-the-post-exploitation-phase)
 - Pivoting
   - [Pivoting & lateral movement](#pivoting-and-lateral-movement)
+  - [Scenario 1: Metasploit internal modules](#scenario-1-utilise-metasploits-internal-modules)
+  - [Scenario 2: Kali external tools](#scenario-2-utilise-kalis-external-tools)
+  - [Pivoting troubleshooting (OODA)](#the-ooda-loop-in-the-pivoting-phase)
 
 [Back to Index](#quick-index)
 
@@ -35,8 +42,6 @@
 This strategic guide provides mandatory protocols for the exam's unique constraints and uses OODA-based troubleshooting loops to follow best-practice operations and overcome common "stuck" points in reconnaissance, exploitation, and pivoting.
 
 # Before the Beginning
-
-[Back to Index](#quick-index)
 
 This section provides a high-level OODA loop to guide the entire 48-hour examination.
 
@@ -66,9 +71,9 @@ This section provides a high-level OODA loop to guide the entire 48-hour examina
 
 # Tactical Deployment and Reconnaissance
 
-[Back to Index](#quick-index)
-
 ## Metasploit Framework Initiation and Verification Workflow
+
+[Back to Index](#quick-index)
 
 The Metasploit database serves as the core strategic tool for managing operational cognitive load.
 
@@ -79,6 +84,8 @@ msf6 > workspace -a lab
 ```
 
 ## Network and Service Reconnaissance
+
+[Back to Index](#quick-index)
 
 The objective at this stage is to construct a comprehensive map of the network.
 
@@ -105,6 +112,8 @@ msf6 > setg RHOST <target_ip>
 
 ## The OODA Loop in the Reconnaissance Phase (Troubleshooting)
 
+[Back to Index](#quick-index)
+
 ### Issue 1 Scanning Failed
 
 - Orient (Positioning issue): `nmap -sn` scan shows zero hosts, or `nmap -sV` scan indicates all ports are "filtered".
@@ -118,9 +127,9 @@ msf6 > setg RHOST <target_ip>
 
 # Attack Playbook (Enumeration and Exploitation)
 
-[Back to Index](#quick-index)
-
 ## Port 21: FTP
+
+[Back to Index](#quick-index)
 
 USE: When anonymous login allows write or vulnerable banners are present (vsftpd 2.3.4, ProFTPD 1.3.3c); fallback to brute force when needed.
 TAGS: ftp, anonymous, write, put, vsftpd, proftpd, hydra
@@ -162,6 +171,8 @@ msf6 > use auxiliary/scanner/ftp/anonymous
 
 ## Port 22: SSH
 
+[Back to Index](#quick-index)
+
 USE: Check for libssh bypass; otherwise consider brute force with known user lists.
 TAGS: ssh, libssh, hydra, brute
 
@@ -189,6 +200,8 @@ nc -nv <target_ip> 22
   ```
 
 ## Port 80/443: HTTP/S
+
+[Back to Index](#quick-index)
 
 USE: Enumerate dirs/CMS/WebDAV; test LFI/RFI/command injection; apply service-specific exploits.
 TAGS: http, https, gobuster, wpscan, webdav, lfi, rfi, shellshock, hydra
@@ -296,6 +309,8 @@ hydra -l admin -P rockyou.txt <TARGET_IP> http-post-form \"/login.php:username=^
 
 ## Port 139/445: SMB
 
+[Back to Index](#quick-index)
+
 USE: Enumerate shares/users; exploit anonymous write or version-specific vulns; psexec on admin creds.
 TAGS: smb, smbclient, smbmap, enum4linux, psexec, hydra
 
@@ -362,6 +377,8 @@ hydra -L <user_file> -P <password_file> //<target_ip> smb
 
 ## Port 3306: MySQL
 
+[Back to Index](#quick-index)
+
 USE: Confirm service, then attempt credential brute force.
 TAGS: mysql, hydra, db, brute
 
@@ -379,7 +396,11 @@ hydra -L <user_file> -P <password_file> //<target_ip> mysql
 
 ## Payload Generation and Delivery
 
+[Back to Index](#quick-index)
+
 ### MSFVenom Payloads Generation
+
+[Back to Index](#quick-index)
 
 TAGS: msfvenom, payload, windows, linux, reverse_tcp, stageless
 
@@ -393,6 +414,8 @@ TAGS: msfvenom, payload, windows, linux, reverse_tcp, stageless
   ```
 
 ### Built-in Payloads on Kali
+
+[Back to Index](#quick-index)
 
 TAGS: webshell, php, aspx, jsp, nc.exe, windows-resources
 
@@ -456,6 +479,8 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
 
 ### Payload Delivery
 
+[Back to Index](#quick-index)
+
 TAGS: delivery, http, smb, ftp, certutil, wget, python-http-server
 
 - HTTP server on attacker
@@ -486,6 +511,8 @@ TAGS: delivery, http, smb, ftp, certutil, wget, python-http-server
   ```
 
 ## The OODA Loop in the Exploitation Phase (Troubleshooting)
+
+[Back to Index](#quick-index)
 
 > Tip: When in doubt: switch to stageless, default to x86, and try reverse ports 80/443 before considering bind shells.
 
@@ -532,11 +559,11 @@ This uses the stable shell (Session 1) to upload and run a new Meterpreter paylo
 
 # Post Exploitation
 
-[Back to Index](#quick-index)
-
 The superiority of manual enumeration: Regardless, the manually curated enumeration lists within this handbook remain the preferred approach. They are precise, targeted, and directly map to known privilege escalation vectors within eJPT. During examinations, executing these 10-15 manual commands typically proves more efficient than sifting through automated script outputs.
 
 ## Primary Triage
+
+[Back to Index](#quick-index)
 
 The first set of commands after obtaining any shell:
 
@@ -573,6 +600,8 @@ Automatical Enumeration Tools:
 - Linux: LinEnum
 
 ## Privilege Escalation Execution
+
+[Back to Index](#quick-index)
 
 ### Linux
 
@@ -668,6 +697,8 @@ Automatical Enumeration Tools:
 
 ## The OODA Loop in The Post Exploitation Phase
 
+[Back to Index](#quick-index)
+
 - Observe: This constitutes the 5-minute Triage.
 - Orient: This is the critical decision fork. The focus is not merely on privilege escalation, but on identifying the next highest-value step. Triage data presents multiple paths:
   - Path A (Pivot): `ip a` / `ipconfig` reveals a new, internal NIC (e.g., `$10.x.x.x`).
@@ -689,8 +720,6 @@ Automatical Enumeration Tools:
 
 # Pivoting and Lateral Movement
 
-[Back to Index](#quick-index)
-
 USE: When a foothold shows dual NICs; route traffic to internal subnets or relay shells back.
 TAGS: pivot, autoroute, socks, proxychains, portfwd, bind_tcp, reverse_tcp
 
@@ -706,6 +735,8 @@ Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stag
 
 ## Scenario 1. Utilise Metasploit's Internal Modules
 
+[Back to Index](#quick-index)
+
 - Tool: `autoroute`
 - Workflow:
   ```text
@@ -718,6 +749,8 @@ Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stag
   ```
 
 ## Scenario 2. Utilise Kali's External Tools
+
+[Back to Index](#quick-index)
 
 - Tool: SocksProxy + Proxychains
 - Workflow:
@@ -748,6 +781,8 @@ Pivoting/lateral movement is the most challenging aspect of eJPT v2 and the stag
     <tool_command> # in the command use 127.0.0.1 as IP and <local_port> as Target Port
 
 ## The OODA Loop in the Pivoting Phase
+
+[Back to Index](#quick-index)
 
 ### Issue 1 Proxychains Failed
 
