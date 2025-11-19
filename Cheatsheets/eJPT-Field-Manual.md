@@ -4,39 +4,27 @@
   - [Summary](#summary)
   - [Before the Beginning (48h OODA)](#before-the-beginning)
 - Recon & Scanning
-  - [Tactical Deployment and Reconnaissance](#tactical-deployment-and-reconnaissance)
-  - [Metasploit init & verify](#metasploit-framework-initiation-and-verification-workflow)
-  - [Network and Service Reconnaissance](#network-and-service-reconnaissance)
-  - [Host discovery](#host-discovery)
-  - [Port/service scanning](#service-and-port-scanning)
-  - [Import Nmap → MSF](#import-nmap-results-into-metasploit)
   - [Recon troubleshooting (OODA)](#the-ooda-loop-in-the-reconnaissance-phase-troubleshooting)
 - Service Playbooks
-  - [Attack Playbook](#attack-playbook-enumeration-and-exploitation)
   - [FTP (21)](#port-21-ftp)
   - [SSH (22)](#port-22-ssh)
   - [HTTP/S (80/443)](#port-80443-https)
   - [SMB (139/445)](#port-139445-smb)
   - [MySQL (3306)](#port-3306-mysql)
 - Payloads
-  - [Payload Generation and Delivery](#payload-generation-and-delivery)
   - [MSFVenom generation](#msfvenom-payloads-generation)
   - [Built-in payloads on Kali](#built-in-payloads-on-kali)
   - [Delivery (HTTP/SMB/FTP)](#payload-delivery)
   - [Payload troubleshooting (OODA)](#the-ooda-loop-in-the-exploitation-phase-troubleshooting)
 - Post-Exploitation
-  - [Post Exploitation](#post-exploitation)
   - [Primary triage](#primary-triage)
   - [PrivEsc: Linux](#privilege-escalation-execution)
   - [PrivEsc: Windows](#privilege-escalation-execution)
   - [Post-exploitation OODA](#the-ooda-loop-in-the-post-exploitation-phase)
 - Pivoting
-  - [Pivoting & lateral movement](#pivoting-and-lateral-movement)
   - [Scenario 1: Metasploit internal modules](#scenario-1-utilise-metasploits-internal-modules)
   - [Scenario 2: Kali external tools](#scenario-2-utilise-kalis-external-tools)
   - [Pivoting troubleshooting (OODA)](#the-ooda-loop-in-the-pivoting-phase)
-
-[Back to Index](#quick-index)
 
 # Summary
 This strategic guide provides mandatory protocols for the exam's unique constraints and uses OODA-based troubleshooting loops to follow best-practice operations and overcome common "stuck" points in reconnaissance, exploitation, and pivoting.
