@@ -9,6 +9,7 @@
 - Service Playbooks
   - [FTP (21)](#port-21-ftp)
   - [SSH (22)](#port-22-ssh)
+  - [SMTP (25)](#port-25-smtp)
   - [HTTP/S (80/443)](#port-80443-https)
   - [SMB (139/445)](#port-139445-smb)
   - [MSSQL (1433)](#port-1433-mssql)
@@ -129,7 +130,7 @@ TAGS: ftp, anonymous, write, put, vsftpd, proftpd, hydra
 ### Scan
 
 ```bash
-nmap -p 21 --script=ftp-anon <target_ip>
+nmap -sV -p 21 --script=ftp-anon <target_ip>
 ```
 
 ### Manual Enumeration
@@ -171,7 +172,7 @@ TAGS: ssh, libssh, hydra, brute
 ### Scan
 
 ```bash
-nmap -p 22 --script=ssh-auth-methods <target_ip>
+nmap -sV -p 22 --script=ssh-auth-methods <target_ip>
 ```
 
 ### Manual Enumeration
@@ -190,6 +191,37 @@ nc -nv <target_ip> 22
   ```bash
   hydra -L <user_file> -P <password_file> ssh://<target_ip>
   ```
+## Port 25: SMTP
+
+[Back to Index](#quick-index)
+
+USE: Enumerate users with smtp-enum; exploit vulnerable versions like Haraka; brute force credentials.
+TAGS: smtp, haraka, hydra, brute
+
+### Scan
+
+```bash
+nmap -sV -p 25 --script=smtp-commands <target_ip>
+```
+
+### Auto Enumeration
+
+```text
+msf6 > use auxiliary/scanner/smtp/smtp_version
+msf6 > use auxiliary/scanner/smtp/smtp_enum
+```
+### Exploitation
+
+- If the service is Haraka with versions before 2.8.9, run:
+```text
+msf6 > use exploit/unix/smtp/haraka_exec
+```
+
+### Brute Force
+
+```bash
+hydra  -L <user_file> -P <password_file> smtp://<target_ip> -s 587 -m AUTH=LOGIN
+```
 
 ## Port 80/443: HTTP/S
 
@@ -201,7 +233,7 @@ TAGS: http, https, gobuster, wpscan, webdav, lfi, rfi, shellshock, hydra
 ### Scan
 
 ```bash
-nmap -p 80,443 --script=http-* <target_ip>
+nmap -sV -p 80,443 --script=http-* <target_ip>
 ```
 
 ### File/Directory Enumeration
@@ -392,7 +424,7 @@ TAGS: mssql, ms-sql, hydra, metasploit, brute
 ### Scan
 
 ```bash
-nmap -p 1433 --script=ms-sql-info,ms-sql-empty-password <target_ip>
+nmap -sV -p 1433 --script=ms-sql-info,ms-sql-empty-password <target_ip>
 ```
 
 ### Enumeration
@@ -432,7 +464,7 @@ TAGS: mysql, hydra, db, brute
 ### Scan
 
 ```bash
-nmap -p 3306 --script mysql-info <target_ip>
+nmap -sV -p 3306 --script mysql-info <target_ip>
 ```
 
 ### Brute Force
