@@ -578,7 +578,6 @@ msf6 > use auxiliary/scanner/winrm/winrm_login
 
 ## Payload Generation and Delivery
 
-[Back to Index](#quick-index)
 
 ### MSFVenom Payloads Generation
 
@@ -604,6 +603,8 @@ TAGS: webshell, php, aspx, jsp, nc.exe, windows-resources
 Kali ships ready-to-use web shells and binaries under /usr/share. Below are the most exam-relevant items.
 
 #### Web Shells
+
+[Back to Index](#quick-index)
 
 - PHP reverse shell
   - Path: `/usr/share/webshells/php/php-reverse-shell.php`
@@ -647,6 +648,8 @@ Kali ships ready-to-use web shells and binaries under /usr/share. Below are the 
       6. Open `http://<target_ip>/shell/jsp-reverse.jsp` to trigger the shell.
 
 #### Windows Binaries
+
+[Back to Index](#quick-index)
 
 - Netcat (nc.exe)
   - Path: `/usr/share/windows-resources/binaries/nc.exe`
