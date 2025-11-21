@@ -291,6 +291,7 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
 
       - Path Traversal Payload Reference
 
+      ```markdown
       | Target File                           | OS      | Objective                                 |
       | ------------------------------------- | ------- | ----------------------------------------- |
       | /etc/passwd                           | Linux   | User Enumeration & Confirm LFI            |
@@ -299,7 +300,8 @@ gobuster dir -u http://<target_ip> -w /usr/share/wordlists/dirb/common.txt -x ph
       | C:\Windows\win.ini                    | Windows | Confirm Windows OS & LFI                  |
       | C:\boot.ini                           | Windows | Old Version Windows Initial Configuration |
       | C:\Windows\System32\drivers\etc\hosts | Windows | Internal Network Resolve Record           |
-
+      ```
+      
     2. Enumeration for RCE Pre-requisites: Once LFI is confirmed, check for RCE possibilities immediately.
       - Check allow_url_include via Wrappers. Check if the server allows execution of input streams (quickest RCE).
         Send a POST request.
